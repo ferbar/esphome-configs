@@ -1,0 +1,89 @@
+# https://automatedhome.party/2019/04/19/my-experience-with-esphome-on-home-assistant-using-and-esp32-camera-motion-module/
+substitutions:
+  devicename: wrover
+  upper_devicename: "wrover"
+
+esphome:
+  name: $devicename
+  platform: ESP32
+  board: esp32dev
+
+<<: !include common/base.yaml
+
+
+esp32_camera:
+  name: wrover
+  external_clock:
+    pin: GPIO32
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO13
+    scl: GPIO12
+  data_pins: [GPIO5, GPIO14, GPIO4, GPIO15, GPIO18, GPIO23, GPIO36, GPIO39]
+  vsync_pin: GPIO27
+  href_pin: GPIO25
+  pixel_clock_pin: GPIO19
+  max_framerate: 5 fps
+  jpeg_quality: 10
+  vertical_flip: false
+  
+  
+  
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+font:
+  - file: "Ubuntu-Regular.ttf"
+    id: ubuntu
+    size: 20
+  - file: "Ubuntu-Regular.ttf"
+    id: ubuntu24
+    size: 24
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    #lambda: |-
+    #  it.print(0, 0, id(ubuntu), "Hello World!");
+    rotation: 180
+    lambda: |-
+      it.strftime(64, 0, id(ubuntu), TextAlign::TOP_CENTER,"%m-%d-%Y", id(homeassistant_time).now());
+      it.strftime(64, 64, id(ubuntu24), TextAlign::BASELINE_CENTER, "%I:%M:%S%p", id(homeassistant_time).now());
+  
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+  - platform: gpio
+    pin: GPIO33
+    name: "PIR Sensor"
+    device_class: motion
+  - platform: gpio
+    pin: GPIO34
+    name: "right button"
+#    device_class: motion
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+#   - platform: bme280
+#     temperature:
+#       name: "BME280 Temperature"
+#       oversampling: 16x
+#     pressure:
+#       name: "BME280 Pressure"
+#     humidity:
+#       name: "BME280 Humidity"
+#     address: 0x77
+#     update_interval: 60s
+
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+

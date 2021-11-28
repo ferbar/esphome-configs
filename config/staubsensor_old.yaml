@@ -1,0 +1,100 @@
+substitutions:
+  devicename: "staubsensor"
+  upper_devicename: "Staubsensor"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: esp12e
+
+<<: !include common/base.yaml
+
+# uart für SDS011
+uart:
+  rx_pin: GPIO5
+  tx_pin: GPIO4
+  baud_rate: 9600
+
+i2c:
+  sda: GPIO00
+  scl: GPIO02
+  scan: True
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+  - platform: sds011
+    pm_2_5:
+      name: "$upper_devicename Particulate Matter <2.5µm Concentration"
+    pm_10_0:
+      name: "$upper_devicename Particulate Matter <10.0µm Concentration"
+    update_interval: 10min
+
+  - platform: dht
+    pin: GPIO13
+    model: DHT11
+    update_interval: 30s
+    temperature:
+      name: "$upper_devicename DHT11 Temperatur"
+    humidity:
+      name: "$upper_devicename DHT11 Luftfeuchtigkeit"
+
+#  - platform: bme280
+#    temperature:
+#      name: "$upper_devicename BME280 Temperature"
+#      oversampling: 16x
+#      id: staubsensor_bme280_temperature
+#    pressure:
+#      name: "$upper_devicename BME280 Pressure"
+#    humidity:
+#      name: "$upper_devicename BME280 Humidity"
+#      id: staubsensor_bme280_humidity
+#    address: 0x76
+#    update_interval: 60s
+
+#  - platform: sgp30
+#    eco2:
+#      name: "$upper_devicename eCO2"
+#      accuracy_decimals: 1
+#    tvoc:
+#      name: "$upper_devicename TVOC"
+#      accuracy_decimals: 1
+#    address: 0x58
+#    update_interval: 10s
+#    baseline:
+#      baseline von 0xff** da is was hin ...
+#      eco2_baseline: 0xFFF0
+#      tvoc_baseline: 0xFFF4
+#    compensation:
+#      temperature_source: staubsensor_bme280_temperature
+#      humidity_source: staubsensor_bme280_humidity
+# --- mitn alten, hat ned funktioniert ---    baseline: 0xF8F8
+
+  - platform: bme680
+    temperature:
+      name: "BME680 Temperature"
+      oversampling: 16x
+    pressure:
+      name: "BME680 Pressure"
+    humidity:
+      name: "BME680 Humidity"
+      id: hum
+    gas_resistance:
+      name: "BME680 Gas Resistance"
+      id: g_res
+    address: 0x77
+    update_interval: 60s
+# comp_gas = log(R_gas[ohm]) + 0.04 log(Ohm)/%rh * hum[%rh]    
+  - platform: template
+    name: "BME680 IAQ"
+    id: IAQ
+    unit_of_measurement: IAQ
+    lambda: 'return log(id(g_res).state) + 0.04 *  id(hum).state;'
+
+
+

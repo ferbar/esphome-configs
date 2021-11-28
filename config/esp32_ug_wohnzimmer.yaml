@@ -1,0 +1,62 @@
+substitutions:
+  devicename: esp32_ug_wohnzimmer
+  upper_devicename: "esp32 UG Wohnzimmer"
+
+esphome:
+  name: $devicename
+  platform: ESP32
+  board: esp32dev
+
+#  on_boot:
+#    priority: 100
+#    then:
+#      - light.turn_on:
+#          id: dac_light1
+#          brightness: 10%
+
+<<: !include base.yaml
+
+
+# Flashlight
+output:
+# geht ned. kamera verwendet intern ledc
+  - platform: ledc
+#  - platform: gpio
+    pin: GPIO4
+    id: gpio_4
+#    frequency: 10hz
+    max_power: 0.1
+  # Register the  LED as a dimmable output ....
+#  - platform: ledc
+  - platform: gpio
+    id: status_led
+    pin: GPIO33
+    inverted: True
+
+  - platform: esp32_dac
+    pin: GPIO25
+    id: dac_output1
+    min_power: 0.07
+  - platform: esp32_dac
+    pin: GPIO26
+    id: dac_output2
+
+light:
+  - platform: monochromatic
+#  - platform: binary
+    output: gpio_4
+    name: "$upper_devicename light"
+  #  default_transition_length: 10s
+  # - platform: monochromatic
+  - platform: binary
+    name: "$upper_devicename status"
+    output: status_led
+
+  - platform: monochromatic
+    output: dac_output1
+    name: "$upper_devicename DAC1"
+    gamma_correct: 2
+    id: dac_light1
+  - platform: monochromatic
+    output: dac_output2
+    name: "$upper_devicename DAC2"

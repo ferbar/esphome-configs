@@ -1,0 +1,7 @@
+# sensor:
+#   - !include common/base-sensor-wifi.yaml
+
+platform: wifi_signal
+name: "${upper_devicename} Wifi Signal"
+update_interval: 60s
+icon: mdi:wifi

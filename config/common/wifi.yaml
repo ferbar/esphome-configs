@@ -1,0 +1,15 @@
+ssid: !secret wifi_name
+password: !secret wifi_pass
+fast_connect:
+  on
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+# ap:
+#   ssid: "${plug_name} Hotspot"
+#   password: "Le_PW"
+ap:
+  ssid: "${upper_devicename} Fallback Hotspot"
+  password: !secret wifi_pass
+
+# 20210518 hatta mit esp8266 ned wolln
+#captive_portal:
+

@@ -1,0 +1,65 @@
+substitutions:
+  devicename: "lichtschalter1"
+  upper_devicename: "Lichtschalter 1"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: esp01_1m
+
+
+<<: !include common/base.yaml
+
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+  - platform: gpio
+    pin:
+      number: GPIO0
+      #mode: INPUT_PULLUP
+      mode: INPUT
+      inverted: True
+    name: "$upper_devicename Touchpad 1"
+  - platform: gpio
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "$upper_devicename Touchpad 2"
+ # - platform: gpio
+ #   pin:
+ #     number: GPIO10
+ #     mode: INPUT_PULLUP
+ #     inverted: True
+ #   name: "$upper_devicename Touchpad 3"
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+switch:
+  - !include common/base-switch-reset.yaml
+  - platform: gpio
+    name: "$upper_devicename Relay 1"
+    pin: GPIO12
+  - platform: gpio
+    name: "Supper_devicename Relay 2"
+    pin: GPIO5
+#  - platform: gpio
+#    name: "Supper_devicename Relay 3"
+#    pin: GPIO4
+
+output:
+  # Register the blue LED as a dimmable output ....
+  - platform: esp8266_pwm
+    id: blue_led
+    pin: GPIO13
+    inverted: True
+
+light:
+  # ... and then make a light out of it.
+  - platform: monochromatic
+    name: "$upper_devicename Blue LED"
+    output: blue_led
+

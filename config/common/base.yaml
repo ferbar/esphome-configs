@@ -1,0 +1,28 @@
+# Enable logging
+logger:
+#  baud_rate: 0
+#  level: DEBUG
+
+# Enable Home Assistant API
+api:
+
+# Enable over the air updates
+ota:
+
+wifi: !include wifi.yaml
+
+# see: https://esphome.io/components/time.html
+# do we need time for every esp device? power drain?
+#time:
+#  - platform: homeassistant
+#    id: homeassistant_time
+
+# captive_portal:
+
+# Enable Web server
+web_server:
+  port: 80
+
+text_sensor:
+  - !include base-text-sensor-version.yaml
+  - !include base-text-sensor-wifi.yaml

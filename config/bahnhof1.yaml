@@ -1,0 +1,71 @@
+substitutions:
+  devicename: "bahnhof1"
+  upper_devicename: "Bahnhof 1"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: esp12e
+
+<<: !include common/base.yaml
+
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+output:
+  # builtin LED
+#  - platform: esp8266_pwm
+#    id: ${devicename}_builtin_led
+#    pin:
+#      number: GPIO02
+#      inverted: True
+# links:
+  - platform: esp8266_pwm
+    id: ${devicename}_16_led
+    pin:
+      number: GPIO16
+  - platform: esp8266_pwm
+    id: ${devicename}_14_led
+    pin:
+      number: GPIO14
+  - platform: esp8266_pwm
+    id: ${devicename}_12_led
+    pin:
+      number: GPIO12
+  - platform: esp8266_pwm
+    id: ${devicename}_13_led
+    pin:
+      number: GPIO13
+
+light:
+  # ... and then make a light out of it.
+  - platform: status_led
+    name: "${upper_devicename} builtin led light"
+    id: ${devicename}_builtin_led_light
+    #output: ${devicename}_builtin_led
+    pin:
+      number: GPIO2
+      inverted: true
+  - platform: monochromatic
+    name: "${upper_devicename} 16 led light"
+    id: ${devicename}_16_led_light
+    output: ${devicename}_16_led
+  - platform: monochromatic
+    name: "${upper_devicename} 14 led light"
+    id: ${devicename}_14_led_light
+    output: ${devicename}_14_led
+  - platform: monochromatic
+    name: "${upper_devicename} 12 led light"
+    id: ${devicename}_12_led_light
+    output: ${devicename}_12_led
+  - platform: monochromatic
+    name: "${upper_devicename} 13 led light"
+    id: ${devicename}_13_led_light
+    output: ${devicename}_13_led
+

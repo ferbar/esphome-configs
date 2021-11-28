@@ -1,0 +1,6 @@
+# text-sensor:
+#   - !include common/base-text-sensor-version.yaml
+
+platform: version
+name: "${upper_devicename} Version"
+icon: mdi:cube-outline

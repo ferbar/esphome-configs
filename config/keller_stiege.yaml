@@ -1,0 +1,52 @@
+substitutions:
+  devicename: "keller_stiege"
+  upper_devicename: "Keller Stiege"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: esp01
+
+# !!!!!!! RX und TX sind GPIO01 + GPIO03, die verwenden wir für PIR in !!!!!!!!!!!!!!!!!11
+<<: !include common/base.yaml
+
+
+binary_sensor:
+#  - !include common/base-binarysensor-status.yaml
+  - platform: gpio
+    pin: GPIO03
+    name: $upper_devicename pir1
+    device_class: motion
+    filters:
+      - invert:
+  - platform: gpio
+    pin: GPIO01
+    name: $upper_devicename pir2
+    device_class: motion
+  - platform: status
+    name: $upper_devicename Status
+
+#sensor:
+#  - !include common/base-sensor-wifi.yaml
+#  - !include common/base-sensor-uptime.yaml
+#  - !include common/base-sensor-vcc.yaml
+
+#text_sensor:
+#  - platform: version
+#    name: $upper_devicename Version
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+output:
+  - platform: esp8266_pwm
+    pin: GPIO02
+    #inverted: true
+    id: gpio_out2
+
+light:
+  - platform: monochromatic
+    name: "$upper_devicename Led strip light"
+    #id: keller_gang_led_strip_light
+    output: gpio_out2
+

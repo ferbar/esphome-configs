@@ -1,0 +1,51 @@
+substitutions:
+  devicename: "sonoff_s26_1"
+  upper_devicename: "Sonoff s26 1"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: esp01_1m
+
+<<: !include common/base.yaml
+
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "${upper_devicename} Button"
+    on_press:
+      - switch.toggle: relay
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+
+output:
+  # Register the green LED as a dimmable output ....
+  - platform: esp8266_pwm
+    id: "${devicename}_led"
+    pin:
+      number: GPIO13
+      inverted: True
+light:
+  # ... and then make a light out of it.
+  - platform: monochromatic
+    name: "${upper_devicename} Green LED"
+    output: ${devicename}_led
+
+
+switch:
+  - !include common/base-switch-reset.yaml
+  - platform: gpio
+    name: "${upper_devicename} Relay"
+    pin: GPIO12
+    id: relay
+
+

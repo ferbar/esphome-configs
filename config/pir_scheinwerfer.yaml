@@ -1,0 +1,42 @@
+esphome:
+  name: pir_scheinwerfer
+  platform: ESP8266
+  board: esp01
+
+
+<<: !include common/base.yaml
+
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+  - platform: gpio
+    pin: GPIO03
+    name: esphome_pir_scheinwerfer_light_motion
+    device_class: motion
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+#  - platform: wifi_signal
+#    name: esphome_pir_scheinwerfer_wifi_signal
+#    update_interval: 10s
+#  - platform: uptime
+#    name: esphome_pir_scheinwerfer_uptime
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+  - platform: output
+    name: "esphome_pir_scheinwerfer_light"
+    output: 'gpio_out'
+
+output:
+  - platform: gpio
+    pin: GPIO02
+    #inverted: true
+    id: gpio_out
+
+
+
+

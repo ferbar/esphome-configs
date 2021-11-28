@@ -1,0 +1,58 @@
+substitutions:
+  devicename: "christest"
+  upper_devicename: "Chris Test"
+
+esphome:
+  name: "${devicename}"
+  platform: ESP8266
+  #board: esp01
+  board: esp8285
+
+<<: !include common/base.yaml
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+  - platform: gpio
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+      inverted: True
+    # name: "${devicename} - Schalter Status"
+    id: "${devicename}_button_state"
+#  - platform: gpio
+#    pin: GPIO03
+#    name: ${upper_devicename} input
+#    device_class: motion
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+light:
+#  - platform: binary
+  - platform: monochromatic
+    name: "${upper_devicename} out1"
+    output: 'gpio_out1'
+#  - platform: binary
+  - platform: monochromatic
+    name: "${upper_devicename} out2"
+    output: 'gpio_out2'
+
+output:
+#  - platform: gpio
+  - platform: esp8266_pwm
+    pin: GPIO00
+    inverted: true
+    id: gpio_out1
+  - platform: esp8266_pwm
+    pin: GPIO02
+    inverted: true
+    id: gpio_out2
+
+
+
+

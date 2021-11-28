@@ -1,0 +1,76 @@
+substitutions:
+  devicename: "audio"
+  upper_devicename: "Audio esp"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: nodemcuv2
+  #arduino_version: espressif8266@2.6.2
+  arduino_version: 2.5.2
+  libraries:
+    - esp8266Audio
+      # SD esp8266, 1.2.4
+#    - id=868
+    - ESP8266HTTPClient@1.2
+  includes:
+    - EsphomeAudio.h
+
+
+
+<<: !include common/base.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+output:
+  # builtin LED
+#  - platform: esp8266_pwm
+#    id: "${devicename}_led"
+#    pin:
+#      number: GPIO02
+#      inverted: True
+#  # red LED
+#  - platform: esp8266_pwm
+#    id: keller_gang_red_led
+#    pin:
+#      number: GPIO15
+#  # green LED
+#  - platform: esp8266_pwm
+#    id: keller_gang_green_led
+#    pin:
+#      number: GPIO12
+#  # blue LED
+#  - platform: esp8266_pwm
+#    id: keller_gang_blue_led
+#    pin:
+#      number: GPIO13
+
+light:
+  # ... and then make a light out of it.
+#  - platform: monochromatic
+#    name: "${upper_devicename} builtin led light"
+#    id: keller_gang_builtin_led_light
+#    output: keller_gang_builtin_led
+#  - platform: rgb
+#    name: "${upper_devicename} RGB led"
+#    #id: keller_gang_rgb_led
+#    red: keller_gang_red_led
+#    green: keller_gang_green_led
+#    blue: keller_gang_blue_led
+
+switch:
+  - platform: custom
+    lambda: |-
+      auto esphomeAudio = new EsphomeAudio();
+      App.register_component(esphomeAudio);
+      return {esphomeAudio};
+##    turn_on_action:
+##      - switch.turn_on: switch2
+##    turn_off_action:
+##      - switch.turn_on: switch1
+    switches:
+      name: "Play Sound"
+

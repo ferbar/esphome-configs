@@ -1,0 +1,216 @@
+substitutions:
+  devicename: "luftsensor"
+  upper_devicename: "Luftsensor"
+
+globals:
+  - id: pm_enabled
+    type: bool
+    initial_value: "true"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: esp07
+  on_boot:
+    then:
+      lambda: |-
+        id(switch_pm_enabled).publish_state(true);
+
+<<: !include common/base.yaml
+
+i2c:
+#   default
+#  - sda: GPIO4
+#    scl: GPIO5
+  - sda: GPIO0
+  # TODO: GPIO == blaue led
+    scl: GPIO2
+    scan: true
+
+# für https://esphome.io/components/sensor/mhz19.html
+uart:
+  - rx_pin: GPIO5
+    tx_pin: GPIO4
+    baud_rate: 9600
+    id: uart1
+  - tx_pin: GPIO14
+    rx_pin: GPIO12
+    baud_rate: 9600
+    id: uart2
+
+bme680_bsec:
+    # i2c address
+    # -----------
+    # Common values are:
+    # - 0x76
+    # - 0x77
+    # Default: 0x76
+    address: 0x77
+
+    # Temperature offset
+    # ------------------
+    # Useful if device is in enclosure and reads too high
+    # Default: 0
+    temperature_offset: 2.5
+
+    # IAQ calculation mode
+    # --------------------
+    # Available options:
+    # - static (for fixed position devices)
+    # - mobile (for on person or other moveable devices)
+    # Default: static
+    iaq_mode: static
+
+    # Sample rate
+    # -----------
+    # Available options:
+    # - lp (low power - samples every 3 seconds)
+    # - ulp (ultra low power - samples every 5 minutes)
+    # Default: lp
+    sample_rate: lp
+
+    # Interval at which to save BSEC state
+    # ------------------------------------
+    # Default: 6h
+    state_save_interval: 48h
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+#  - platform: dht
+#    pin: GPIO13
+#    model: DHT22
+#    update_interval: 5s
+#    temperature:
+#      name: $upper_devicename Temperatur
+#    humidity:
+#      name: $upper_devicename Luftfeuchtigkeit
+
+  - platform: dht
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+#        pullup: true
+#    model: DHT11
+    model: AM2302
+    update_interval: 10s
+    temperature:
+      name: "$upper_devicename DHT22 Temperatur"
+    humidity:
+      name: "$upper_devicename DHT22 Luftfeuchtigkeit"
+
+  - platform: mhz19
+    uart_id: uart1
+    co2:
+      name: "$upper_devicename MH-Z19 CO2 Value"
+    temperature:
+      name: "$upper_devicename MH-Z19 Temperature"
+    update_interval: 60s
+
+  - platform: bme680_bsec
+    temperature:
+      # Temperature in °C
+      name: "$upper_devicename BME680 Temperature"
+      sample_rate: lp
+      filters:
+        - median
+    pressure:
+      # Pressure in hPa
+      name: "$upper_devicename BME680 Pressure"
+      sample_rate: lp
+      filters:
+        - median
+    humidity:
+      # Relative humidity %
+      name: "$upper_devicename BME680 Humidity"
+      sample_rate: lp
+      filters:
+        - median
+    gas_resistance:
+      # Gas resistance in Ω
+      name: "$upper_devicename BME680 Gas Resistance"
+      filters:
+        - median
+    iaq:
+      # Indoor air quality value
+      name: "$upper_devicename BME680 IAQ"
+      filters:
+        - median
+    iaq_accuracy:
+      # IAQ accuracy as a numeric value of 0, 1, 2, 3
+      name: "$upper_devicename BME680 Numeric IAQ Accuracy"
+    co2_equivalent:
+      # CO2 equivalent estimate in ppm
+      name: "$upper_devicename BME680 CO2 Equivalent"
+      filters:
+        - median
+    breath_voc_equivalent:
+      # Volatile organic compounds equivalent estimate in ppm
+      name: "$upper_devicename BME680 Breath VOC Equivalent"
+      filters:
+        - median
+  - platform: sds011
+    pm_2_5:
+      name: "$upper_devicename Particulate Matter <2.5µm Concentration"
+    pm_10_0:
+      name: "$upper_devicename Particulate Matter <10.0µm Concentration"
+    update_interval: 5min
+    id: pm
+    uart_id: uart2
+
+#number:
+#  - platform: template
+#    name: "SDS011 Update Interval"
+#    min_value: 1
+#    max_value: 100
+#    step: 1
+#    lambda: |-
+#      float value = id(pm).update_interval_min_;
+#      ESP_LOGD("main", "Returning ********************************** %f ****************", value);
+#      return value;
+#    set_action:
+#      lambda: |-
+#        ESP_LOGD("main", "Setting ********************************** %f ****************", x);
+#        id(pm).update_interval_min_=x;
+
+text_sensor:
+  - platform: bme680_bsec
+    iaq_accuracy:
+      # IAQ accuracy as a text value of Stabilizing, Uncertain, Calibrating, Calibrated
+      name: "$upper_devicename BME680 IAQ Accuracy"
+  - !include common/base-text-sensor-version.yaml
+  - !include common/base-text-sensor-wifi.yaml
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+  - platform: template
+    name: "$upper_devicename enable sds011"
+    id: switch_pm_enabled
+      # ESP_LOGD("sds011", "Returning  ********************************** %d ****************", id(pm_enabled) );
+    lambda: |-
+      return id(pm_enabled);
+    turn_on_action:
+      lambda: |-
+        ESP_LOGW("sds011", "Setting on");
+        id(pm).set_working_state(true);
+        id(pm_enabled)=true;
+    turn_off_action:
+      lambda: |-
+        ESP_LOGW("sds011", "Setting off");
+        id(pm).set_working_state(false);
+        id(pm_enabled)=false;
+
+
+#status_led:
+#  pin:
+#    number: GPIO2
+#    #inverted: True
+#    inverted: False
+#  id: led_blue
+#

@@ -1,0 +1,10 @@
+# text-sensor:
+#   - !include common/base-text-sensor-wifi.yaml
+
+platform: wifi_info
+ip_address:
+  name: "${upper_devicename} IP"
+  icon: mdi:ip-network-outline
+mac_address:
+  name: "${upper_devicename} Mac"
+  icon: mdi:network-outline

@@ -1,0 +1,98 @@
+substitutions:
+  devicename: "higrow"
+  upper_devicename: "HiGrow"
+
+esphome:
+  name: $devicename
+  platform: ESP32
+  board: pocket_32
+
+<<: !include common/base.yaml
+
+# Enable fallback hotspot (captive portal) in case wifi connection fails
+captive_portal:
+
+# report all tracked BLE devices
+esp32_ble_tracker:
+# default true
+#active: true
+
+#esp32_ble_beacon:
+#  type: iBeacon
+#  uuid: 'deadbeef-28c4-164b-1019-1c368fcbebce'
+#  #major: 10167
+#  #minor: 61958
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+#  - !include common/base-sensor-vcc.yaml
+
+
+  - platform: dht
+    pin: GPIO22
+    model: DHT11
+    update_interval: 30s
+    temperature:
+      name: "$upper_devicename DHT11 Temperatur"
+    humidity:
+      name: "$upper_devicename DHT11 Luftfeuchtigkeit"
+
+  - platform: adc
+    pin: GPIO32
+    name: "${upper_devicename} moisture"
+    update_interval: 10s
+    unit_of_measurement: '%'
+    # 0-3,9V
+    attenuation: 11db
+    filters:
+      # internet hätte gesagt 100% = 1.53V 0% = 3,74V
+      # 3,1V in der luft
+      # 1,45V in wasser
+      - lambda: |-
+          if (x > 3.1) {
+            return 0;
+          } else if (x < 1.5) {
+            return 100;
+          } else {
+            return (3.1-x) / (3.1-1.5) * 100.0;
+          }
+
+    # alter name: xiaomi_miflora
+  - platform: xiaomi_hhccjcy01
+    # VegTrug
+    mac_address: 80:EA:CA:88:F3:A5
+    temperature:
+      name: "Paradeiser Temperature"
+    moisture:
+      name: "Paradeiser Moisture"
+    illuminance:
+      name: "Paradeiser Light Intensity"
+    conductivity:
+      name: "Paradeiser Conductivity"
+    battery_level:
+      name: "Paradeiser Battery Level"
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+#output:
+#  # LED
+#  - platform: ledc
+#    id: ${devicename}_led
+#    pin:
+#      number: GPIO16
+#      inverted: True
+
+light:
+  # ... and then make a light out of it.
+#  - platform: monochromatic
+  - platform: status_led
+    name: "${upper_devicename} builtin led light"
+    id: ${devicename}_led_light
+#    output: ${devicename}_led
+    pin: GPIO16
+

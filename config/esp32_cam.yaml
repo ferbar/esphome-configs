@@ -1,0 +1,62 @@
+substitutions:
+  devicename: esp32_cam
+
+esphome:
+  name: $devicename
+  platform: ESP32
+  board: esp32dev
+
+<<: !include common/base.yaml
+
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+# Example configuration entry -- Ai-Thinker Camera
+esp32_camera:
+  external_clock:
+    pin: GPIO0
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  power_down_pin: GPIO32
+
+  # Image settings
+  name: My Camera
+  # resolution: 1024x768
+  resolution: 1280x1024
+
+# Flashlight
+output:
+# geht ned. kamera verwendet intern ledc
+#  - platform: ledc
+  - platform: gpio
+    pin: GPIO4
+    id: gpio_4
+#    frequency: 10hz
+  # Register the  LED as a dimmable output ....
+#  - platform: ledc
+  - platform: gpio
+    id: status_led
+    pin: GPIO33
+    inverted: True
+light:
+#  - platform: monochromatic
+  - platform: binary
+    output: gpio_4
+    name: $hostname light
+  #  default_transition_length: 10s
+  # - platform: monochromatic
+  - platform: binary
+    name: $hostname status
+    output: status_led
+
+web_server:
+  port: 80

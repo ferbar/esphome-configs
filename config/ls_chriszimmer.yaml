@@ -1,0 +1,78 @@
+substitutions:
+  devicename: "ls_chriszimmer"
+  upper_devicename: "LS Chriszimmer"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: esp01_1m
+
+
+<<: !include common/base.yaml
+
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+  - platform: gpio
+    pin:
+      number: GPIO0
+      #mode: INPUT_PULLUP
+      mode: INPUT
+      inverted: True
+    name: "$upper_devicename Touchpad 1"
+    on_press:
+      - light.toggle: lrelay1
+  - platform: gpio
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "$upper_devicename Touchpad 2"
+    on_press:
+      - light.toggle: lrelay2
+ # - platform: gpio
+ #   pin:
+ #     number: GPIO10
+ #     mode: INPUT_PULLUP
+ #     inverted: True
+ #   name: "$upper_devicename Touchpad 3"
+  - platform: status
+    name: "$upper_devicename Status"
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+output:
+  # Register the blue LED as a dimmable output ....
+  - platform: esp8266_pwm
+    id: blue_led
+    pin: GPIO13
+    inverted: True
+  - platform: gpio
+    id: "relay1"
+    pin: GPIO12
+  - platform: gpio
+    pin: GPIO5
+    id: "relay2"
+
+switch:
+  - !include common/base-switch-reset.yaml
+#  - platform: gpio
+#    name: "Supper_devicename Relay 3"
+#    pin: GPIO4
+
+light:
+  # ... and then make a light out of it.
+  - platform: monochromatic
+    name: "$upper_devicename Blue LED"
+    output: blue_led
+  - platform: binary
+    name: "$upper_devicename Relay 1"
+    id: lrelay1
+    output: "relay1"
+  - platform: binary
+    name: "$upper_devicename Relay 2"
+    id: lrelay2
+    output: "relay2"

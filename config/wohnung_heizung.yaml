@@ -1,0 +1,152 @@
+# ./src/esphome/components/senseair/senseair.cpp
+#    ESP_LOGW(TAG, "Invalid preamble from SenseAir! %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x", response[0], response[1], response[2], response[3], 
+#		response[4], response[5], response[6], response[7], 
+#		response[8], response[9], response[10], response[11],     response[12]);
+
+substitutions:
+  devicename: "wohnung_heizung"
+  upper_devicename: "Wohnung Heizung"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: nodemcuv2
+
+<<: !include common/base.yaml
+
+logger:
+#  baud_rate: 0
+#  hardware_uart: UART0_SWAP
+
+uart:
+## dummy uart to use hardware UART0 for logging
+#  - rx_pin: RX
+#    tx_pin: TX
+#    baud_rate: 115200
+#    id: uart_logger
+
+  - rx_pin: D5
+    tx_pin: D6
+    baud_rate: 9600
+    id: uart_senseair
+
+# uart für SDS011
+    # D8 pulled low => esp bootet nicht => besser nur als output verwenden !!!
+    # gehtnicht: GPIO13 + GPIO15 sind uart0 alt => wird automatisch hardware uart verwendet => logger geht nicht weil der braucht den UART0, daher pins verdreht
+  - rx_pin: D7
+    tx_pin: D8
+    baud_rate: 9600
+    id: uart_sds011
+
+i2c:
+  sda: D2
+  scl: D1
+  scan: true
+  id: bus_a
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+
+#  - platform: gpio
+#    pin:
+#      number: GPIO14
+#      mode: INPUT_PULLUP
+#      inverted: True
+#    name: ${upper_devicename} Klingel
+#    filters:
+#      # würde bei 50Hz 50*pro sekunde auslösen ;-)
+#      - delayed_off: 200ms
+#    on_press:
+#      - light.turn_on: keller_gang_builtin_led_light
+#    on_release:
+#      - light.turn_off: keller_gang_builtin_led_light
+#    device_class: occupancy
+
+#  - platform: gpio
+#    pin:
+#      number: GPIO16
+#    name: "${upper_devicename} PIR Sensor"
+#    device_class: motion
+#    on_press:
+#      - light.turn_on: keller_gang_builtin_led_light
+#    on_release:
+#      - light.turn_off: keller_gang_builtin_led_light
+
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+  - platform: senseair
+    co2:
+      name: "$upper_devicename SenseAir CO2 Value"
+    update_interval: 60s
+    uart_id: uart_senseair
+
+  - platform: dht
+    pin: D3
+    temperature:
+      name: "$upper_devicename Temperature"
+      id: dht_temperature
+    humidity:
+      name: "$upper_devicename Humidity"
+      id: dht_humidity
+    update_interval: 60s
+    model: AM2302
+
+  - platform: sgp30
+    eco2:
+      name: "$upper_devicename eCO2"
+      accuracy_decimals: 1
+    tvoc:
+      name: "$upper_devicename TVOC"
+      accuracy_decimals: 1
+    eco2_baseline:
+      name: "$upper_devicename eCO2 Baseline"
+    tvoc_baseline:
+      name: "$upper_devicename TVOC Baseline"
+    store_baseline: yes
+    address: 0x58
+    # im datasheet wird 1s empfohlen, bei 10s schimpfts dauernd
+    update_interval: 1s
+    baseline:
+      eco2_baseline: 0x8DB1
+      tvoc_baseline: 0x9977
+
+    compensation:
+      temperature_source: dht_temperature
+      humidity_source: dht_humidity
+
+  - platform: sds011
+    pm_2_5:
+      name: "$upper_devicename Particulate Matter <2.5µm Concentration"
+    pm_10_0:
+      name: "$upper_devicename Particulate Matter <10.0µm Concentration"
+    #update_interval: 1min
+    update_interval: 10min
+    uart_id: uart_sds011
+
+
+output:
+  # builtin LED
+  - platform: esp8266_pwm
+    id: builtin_led
+    pin:
+      # D4 == GPIO2
+      number: GPIO02
+      inverted: True
+
+# D1 conflict with sgp30
+#switch:
+#  - !include common/base-switch-reset.yaml
+#  - platform: gpio
+#    pin: D1
+#    name: "$upper_devicename relais"
+
+light:
+  - platform: monochromatic
+    name: "${upper_devicename} builtin led light"
+    id: builtin_led_light
+    output: builtin_led
+

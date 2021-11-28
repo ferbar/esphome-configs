@@ -1,0 +1,111 @@
+substitutions:
+  devicename: "keller_gang"
+  upper_devicename: "Keller Gang"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: nodemcuv2
+
+
+<<: !include common/base.yaml
+
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+      inverted: True
+    name: ${upper_devicename} Klingel
+    filters:
+      # würde bei 50Hz 50*pro sekunde auslösen ;-)
+      - delayed_off: 200ms
+    on_press:
+      - light.turn_on: keller_gang_builtin_led_light
+    on_release:
+      - light.turn_off: keller_gang_builtin_led_light
+    device_class: occupancy
+
+  - platform: gpio
+    pin:
+      number: GPIO16
+    name: "${upper_devicename} PIR Sensor"
+    device_class: motion
+    on_press:
+      - light.turn_on: keller_gang_builtin_led_light
+    on_release:
+      - light.turn_off: keller_gang_builtin_led_light
+
+  - platform: status
+    name: "${upper_devicename} Status"
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+#  - !include common/base-sensor-vcc.yaml
+  - platform: adc
+    pin: A0
+    name: "${upper_devicename} Raum Beleuchtungsstärke"
+    id: keller_gang_light_intensity
+    update_interval: 10s
+    unit_of_measurement: lux
+    filters:
+      - lambda: |-
+          return (x / 10000.0) * 2000000.0;
+#    device_class: illuminance
+# Bug: funktioniert nicht gleichzeitig mit A0 ...
+#  - platform: adc
+#    pin: VCC
+#    name: "VCC Voltage"
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+output:
+  # builtin LED
+  - platform: esp8266_pwm
+    id: keller_gang_builtin_led
+    pin:
+      number: GPIO02
+      inverted: True
+  # red LED
+  - platform: esp8266_pwm
+    id: keller_gang_red_led
+    pin:
+      number: GPIO15
+  # green LED
+  - platform: esp8266_pwm
+    id: keller_gang_green_led
+    pin:
+      number: GPIO12
+  # blue LED
+  - platform: esp8266_pwm
+    id: keller_gang_blue_led
+    pin:
+      number: GPIO13
+  # Led strip
+  - platform: esp8266_pwm
+    id: keller_gang_led_strip
+    pin:
+      number: GPIO05
+
+light:
+  # ... and then make a light out of it.
+  - platform: monochromatic
+    name: "${upper_devicename} builtin led light"
+    id: keller_gang_builtin_led_light
+    output: keller_gang_builtin_led
+  - platform: rgb
+    name: "${upper_devicename} RGB led"
+    #id: keller_gang_rgb_led
+    red: keller_gang_red_led
+    green: keller_gang_green_led
+    blue: keller_gang_blue_led
+  - platform: monochromatic
+    name: "${upper_devicename} Led strip light"
+    #id: keller_gang_led_strip_light
+    output: keller_gang_led_strip
+
+
