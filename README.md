@@ -1,4 +1,4 @@
-#ESPHome Configs
+# ESPHome Configs
 
 ## Memory Map generieren:
 
