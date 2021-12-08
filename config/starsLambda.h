@@ -1,11 +1,12 @@
 #include "esphome.h"
+#undef delay
 
 class StarInfo {
 public:
 	StarInfo() :
 		ledNumber(-1), brightness(0), brightnessInc(0), delay(0), delayWait(0), color(0)
 		{ } ;
-	StarInfo(int ledNumber, int brightness, int brightnessInc, byte delay, byte delayWait, ESPColor color) :
+	StarInfo(int ledNumber, int brightness, int brightnessInc, byte delay, byte delayWait, esphome::Color color) :
 		ledNumber(ledNumber), brightness(brightness), brightnessInc(brightnessInc), delay(delay), delayWait(delayWait), color(color)
 		{ } ;
 
@@ -14,7 +15,7 @@ public:
 	int brightnessInc;
 	byte delay;
 	byte delayWait;
-	ESPColor color;
+	esphome::Color color;
 };
 
 const int STAR_K_MIN=1800;
@@ -42,8 +43,8 @@ void starsLambda(AddressableLight &it) {
 	// it.size() - Number of LEDs
 	// it[num] - Access the LED at index num.
 	// Set the LED at num to the given r, g, b values
-	// it[num] = ESPColor(r, g, b);
-	// Get the color at index num (ESPColor instance)
+	// it[num] = esphome::Color(r, g, b);
+	// Get the color at index num (esphome::Color instance)
 	// it[num].get();
 	// n stars
 	if(numStars == -1)  {
@@ -51,7 +52,7 @@ void starsLambda(AddressableLight &it) {
 		stars = new StarInfo[numStars];
 	}
 
-	it.range(0, it.size()) = COLOR_BLACK;
+	it.range(0, it.size()) = esphome::Color::BLACK;
 
 	for(int i=0; i < numStars; i++) {
 		// init star:
@@ -87,7 +88,7 @@ void starsLambda(AddressableLight &it) {
 
 		if(stars[i].ledNumber >= 0) {
 			int brightness=255 - abs(stars[i].brightness);
-			ESPColor color=stars[i].color * brightness;
+			esphome::Color color=stars[i].color * brightness;
 			// gamma correction => check rgb_order: GRB if stars are not red / orange / yellow / white / blue-ish
 			//color.red=color.red*pow(color.red/255.0,1);
 			//color.green=color.green*pow(color.green/255.0,1.2);
@@ -105,13 +106,13 @@ void starsLambda(AddressableLight &it) {
 	if(cometLedNumber >= 0 && cometBrightness < 255) {
 		for(int i=0; i < cometLength; i++) {
 			int brightness=255 - abs(cometBrightness);
-			ESPColor color=COLOR_WHITE * (brightness * i/cometLength);
+			esphome::Color color=esphome::Color::WHITE * (brightness * i/cometLength);
 			int ledNumber=cometLedNumber+(i*cometDirection);
 			if(i == cometLength-1) {
 				color+=80;
 			}
 			if(ledNumber < it.size() && ledNumber >= 0) {
-				ESPColor curr=it[ledNumber].get();
+				esphome::Color curr=it[ledNumber].get();
 				it[ledNumber]=color+curr;
 			}
 		}

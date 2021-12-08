@@ -13,7 +13,7 @@ int clamp( int x, int min, int max ) {
     return x;
 }
 
-ESPColor colorTemperatureToRGB(int kelvin) {
+esphome::Color colorTemperatureToRGB(int kelvin) {
 
     int temp = kelvin / 100;
 
@@ -51,7 +51,7 @@ ESPColor colorTemperatureToRGB(int kelvin) {
     }
 
 
-    return ESPColor(
+    return esphome::Color(
 	    clamp(red,   0, 255),
         clamp(green, 0, 255),
         clamp(blue,  0, 255)
