@@ -1,6 +1,6 @@
 substitutions:
-  devicename: "keller_gang"
-  upper_devicename: "Keller Gang"
+  devicename: "ug_keller_gang"
+  upper_devicename: "UG Keller Gang"
 
 esphome:
   name: $devicename
