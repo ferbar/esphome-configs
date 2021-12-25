@@ -1,5 +1,10 @@
 # ESPHome Configs
 
+## Addressable Light Examples
+=> config/addressable_effects.yaml
+
+<img src="christbaum_2021.gif" alt="Addressable light example" width="240"/>
+
 ## Memory Map generieren:
 
 esphome -v compile x.yaml
@@ -13,7 +18,7 @@ minicom -R UTF-8 => UTF8 Zeichen werden richtig angezeigt, dafür sind die Umlau
 
 ## example configs:
 
-vom HA aus änderbare Variable:
+### vom HA aus änderbare Variable:
 ```
 number:
   - platform: template
