@@ -16,8 +16,8 @@ binary_sensor:
   - platform: gpio
     pin:
       number: GPIO14
-      mode: INPUT_PULLUP
-      inverted: True
+      mode: INPUT
+      inverted: False
     name: ${upper_devicename} Klingel
     filters:
       # würde bei 50Hz 50*pro sekunde auslösen ;-)
@@ -37,6 +37,13 @@ binary_sensor:
       - light.turn_on: keller_gang_builtin_led_light
     on_release:
       - light.turn_off: keller_gang_builtin_led_light
+
+  - platform: gpio
+    pin:
+      number: GPIO4
+      inverted: True
+    name: "${upper_devicename} PIR Sensor 2"
+    device_class: motion
 
   - platform: status
     name: "${upper_devicename} Status"
@@ -68,7 +75,7 @@ output:
   - platform: esp8266_pwm
     id: keller_gang_builtin_led
     pin:
-      number: GPIO02
+      number: GPIO2
       inverted: True
   # red LED
   - platform: esp8266_pwm
@@ -89,7 +96,12 @@ output:
   - platform: esp8266_pwm
     id: keller_gang_led_strip
     pin:
-      number: GPIO05
+      number: GPIO5
+
+  - platform: esp8266_pwm
+    id: keller_gang_led_strip2
+    pin:
+      number: GPIO0
 
 light:
   # ... and then make a light out of it.
@@ -107,5 +119,9 @@ light:
     name: "${upper_devicename} Led strip light"
     #id: keller_gang_led_strip_light
     output: keller_gang_led_strip
+  - platform: monochromatic
+    name: "${upper_devicename} Led strip light 2"
+    output: keller_gang_led_strip2
+
 
 
