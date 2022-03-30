@@ -14,10 +14,20 @@ esphome:
 #          id: dac_light1
 #          brightness: 10%
 
-<<: !include base.yaml
+<<: !include common/base.yaml
 
 
-# Flashlight
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+#  - !include common/base-sensor-vcc.yaml
+
+switch:
+  - !include common/base-switch-reset.yaml
+
 output:
 # geht ned. kamera verwendet intern ledc
   - platform: ledc
