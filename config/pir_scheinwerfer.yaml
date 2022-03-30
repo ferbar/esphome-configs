@@ -1,8 +1,11 @@
+substitutions:
+  devicename: "pir_scheinwerfer"
+  upper_devicename: "PIR Scheinwerfer"
+
 esphome:
-  name: pir_scheinwerfer
+  name: $devicename
   platform: ESP8266
   board: esp01
-
 
 <<: !include common/base.yaml
 
