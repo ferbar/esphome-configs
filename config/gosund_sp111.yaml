@@ -1,3 +1,5 @@
+# !!!! nur template !!!!
+
 esphome:
   name: $devicename
   platform: ESP8266
@@ -6,7 +8,7 @@ esphome:
     then:
       - switch.turn_on: relay
 
-<<: !include base.yaml
+<<: !include common/base.yaml
 
 # .base-sensor-wifi: !include &base-sensor-wifi base-sensor-wifi.yaml
 # .base-sensor-uptime: !include &base-sensor-uptime base-sensor-uptime.yaml
@@ -15,7 +17,7 @@ esphome:
 # config from: https://community.home-assistant.io/t/gosund-sp111-with-esphome-power-measurement/194477
 
 binary_sensor:
-  - !include base-binarysensor-status.yaml
+  - !include common/base-binarysensor-status.yaml
   # switch relay off while holding
   # - platform: gpio
   #   id: button
@@ -38,10 +40,10 @@ binary_sensor:
       - switch.toggle: relay
 
 sensor:
-  - !include base-sensor-wifi.yaml
-  - !include base-sensor-uptime.yaml
-  - !include base-sensor-wattage.yaml
-  - !include base-sensor-vcc.yaml
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-wattage.yaml
+  - !include common/base-sensor-vcc.yaml
   # see pinout https://templates.blakadder.com/gosund_SP111_v1_1.html
   - platform: hlw8012
     sel_pin:
@@ -73,12 +75,6 @@ sensor:
       unit_of_measurement: W
       id: "power_wattage"
       icon: mdi:gauge
-
-status_led:
-  pin:
-    number: GPIO02
-    inverted: True
-  id: led_blue
 
 output:
   - platform: esp8266_pwm
@@ -116,6 +112,7 @@ switch:
     #   - output.turn_on: led_red
     # on_turn_off:
     #   - output.turn_off: led_red
+
 light:
    # ... and then make a normal light out of it.
   - platform: monochromatic
@@ -150,3 +147,10 @@ light:
 #  - platform: binary
 #    name: "${devicename} - LED (Blue)"
 #    output: led_blue
+
+status_led:
+  pin:
+    number: GPIO02
+    inverted: True
+  id: led_blue
+
