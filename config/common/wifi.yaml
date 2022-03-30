@@ -6,9 +6,9 @@ fast_connect:
 # ap:
 #   ssid: "${plug_name} Hotspot"
 #   password: "Le_PW"
-ap:
-  ssid: "${upper_devicename} Fallback Hotspot"
-  password: !secret wifi_pass
+#ap:
+#  ssid: "${upper_devicename} Fallback Hotspot"
+#  password: !secret wifi_pass
 
 # 20210518 hatta mit esp8266 ned wolln
 #captive_portal:
