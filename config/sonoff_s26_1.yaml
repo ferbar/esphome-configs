@@ -26,6 +26,12 @@ sensor:
   - !include common/base-sensor-uptime.yaml
   - !include common/base-sensor-vcc.yaml
 
+switch:
+  - !include common/base-switch-reset.yaml
+  - platform: gpio
+    name: "${upper_devicename} Relay"
+    pin: GPIO12
+    id: relay
 
 output:
   # Register the green LED as a dimmable output ....
@@ -34,18 +40,12 @@ output:
     pin:
       number: GPIO13
       inverted: True
+
 light:
   # ... and then make a light out of it.
   - platform: monochromatic
     name: "${upper_devicename} Green LED"
     output: ${devicename}_led
 
-
-switch:
-  - !include common/base-switch-reset.yaml
-  - platform: gpio
-    name: "${upper_devicename} Relay"
-    pin: GPIO12
-    id: relay
 
 
