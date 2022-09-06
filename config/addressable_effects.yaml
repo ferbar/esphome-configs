@@ -139,8 +139,17 @@
           name: "starry sky"
           update_interval: 10ms
           lambda: |-
-            starsLambda(it); 
+            starsLambda(it);
             
+      - addressable_lambda:
+          name: "round color move"
+          update_interval: 50ms
+          #update_interval: 300ms
+          lambda: |-
+            static int loopLedNumbers[]={3,10,16,23,29,37,47,60, -1};
+            static int loopDiameter[]={50,80,110,140,170,200,230,255};
+            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed));
+
 
       - addressable_lambda:
           name: "candles"
