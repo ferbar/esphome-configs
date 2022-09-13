@@ -81,6 +81,8 @@ void addressableRoundEffectsLambda(AddressableLight &it, int *loopLedStartNumber
 	int colorPos0=colorPos;
 	int colorPos1=colorPos+512;
 	int colorPos2=colorPos+512*2;
+	// Hint: wenn colorPos1 > Led XPos wird schaltet er aufs 1. if um,
+	// wenn colorPos1 > 512 werden die movingColor - farben weitergeschalten + auf else umgeschalten
 	for(int i=0; i < numLeds; i++) {
 		int posOffset=leds[i].x; // vielleicht nehma irgendwann y noch dazu
 		esphome::Color color;
