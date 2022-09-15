@@ -146,10 +146,57 @@
           update_interval: 50ms
           #update_interval: 300ms
           lambda: |-
-            static int loopLedNumbers[]={3,10,16,23,29,37,47,60, -1};
-            static int loopDiameter[]={50,80,110,140,170,200,230,255};
-            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed));
+            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed),
+                [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &, int colorPos1) {
+                  return color1*value1 + color2*value2;
+                }
+            );
 
+      - addressable_lambda:
+          name: "round color waves"
+          update_interval: 50ms
+          #update_interval: 300ms
+          lambda: |-
+            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed),
+                [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &, int colorPos1) {
+                  return color1*(255-value1);
+                }
+            );
+
+      - addressable_lambda:
+          name: "round color waves blended"
+          update_interval: 50ms
+          #update_interval: 300ms
+          lambda: |-
+            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed),
+                [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &, int colorPos1) {
+                  return colorBlended*(255-value1);
+                }
+            );
+
+      - addressable_lambda:
+          name: "round color waves blended spin"
+          update_interval: 50ms
+          #update_interval: 300ms
+          lambda: |-
+            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed),
+                [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &ledPosInfo, int colorPos1) {
+                  int distance=(ledPosInfo.angle/2 /* => 0..255 */ - colorPos1) & 0xff;
+                  return colorBlended*(distance);
+                }
+            );
+
+      - addressable_lambda:
+          name: "round color rainbow spin"
+          update_interval: 50ms
+          #update_interval: 300ms
+          lambda: |-
+            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed),
+                [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &ledPosInfo, int colorPos1) {
+                  int distance=(ledPosInfo.angle/2 /* => 0..255 */ - colorPos1) & 0xff; 
+                  return rainbow2Color(distance * 6);
+                }
+            );
 
       - addressable_lambda:
           name: "candles"

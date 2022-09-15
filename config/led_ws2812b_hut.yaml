@@ -11,6 +11,7 @@ esphome:
     - src/HSL2RGB.h
     - src/starsLambda.h
     - src/addressableRoundEffects.h
+    - led_ws2812b_hut_global_vars.h
   on_boot:
     then:
       #- light.turn_on: ${devicename}_WS2812b_Light
@@ -20,7 +21,7 @@ esphome:
 #          effect: "starry sky"
 #          effect: "color change"
 #          brightness: 66%
-          brightness: 50%
+          brightness: 30%
 
 # disable ota + api
 #<<: !include common/base.yaml
@@ -93,7 +94,7 @@ number:
   - platform: template
     name: "Effect"
     min_value: 0
-    max_value: 10
+    max_value: 14
     step: 1
     lambda: |-
       ESP_LOGD("main", "Returning effect ********************************** %f ****************", id(effectSpeed));
@@ -113,8 +114,12 @@ number:
             case 6: call.set_effect("random shift"); break;
             case 7: call.set_effect("starry sky"); break;
             case 8: call.set_effect("round color move"); break;
-            case 9: call.set_effect("candles"); break;
-            case 10: call.set_effect("flicker"); break;
+            case 9: call.set_effect("round color waves"); break;
+            case 10: call.set_effect("round color waves blended"); break;
+            case 11: call.set_effect("round color waves blended spin"); break;
+            case 12: call.set_effect("round color rainbow spin"); break;
+            case 13: call.set_effect("candles"); break;
+            case 14: call.set_effect("flicker"); break;
         }
         call.perform();
 
@@ -169,6 +174,8 @@ light:
 #    num_leds: 150
 #    rgb_order: RGB
 #    gamma_correct: 2
+#    202209: mit gamma_correct: 1 ist der regenbogen viel schöner!
+    gamma_correct: 1
 
     on_turn_on:
       - light.turn_on:

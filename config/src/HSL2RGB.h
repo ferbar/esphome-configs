@@ -1,5 +1,50 @@
 #include "esphome.h"
 
+/**
+ * spuckt aus einen wert am regenbogen:
+ * 0 => blau
+ * 255 => rosa
+ * 511 => rot
+ * 256*3 => gelb
+ * 256*4 => grün
+ * 256*5 => türkis
+ *
+ * pos 0 ... 256*6-1
+ *
+ */
+esphome::Color rainbow2Color(int pos) {
+	int red;
+	int green;
+	int blue;
+
+	if(pos > 1279) {
+		red=0;
+		green=0;
+		blue=255;
+	} else if(pos > 1023) {
+		red=0;
+		green=1279-pos;
+		blue=pos-1023;
+	} else if(pos > 767) {
+		red=1023-pos;
+		green=255;
+		blue=0;
+	} else if(pos > 511) {
+		red=255;
+		green=pos-255;
+		blue=0;
+	} else if(pos > 255) {
+		red=255;
+		green=0;
+		blue=255-pos;
+	} else {
+		red=pos;
+		green=0;
+		blue=255;
+	}
+	return esphome::Color(red, green, blue);
+}
+
 float _hue2rgb(float p, float q, float t) {
 	if(t < 0) t += 1;
 	if(t > 1) t -= 1;
