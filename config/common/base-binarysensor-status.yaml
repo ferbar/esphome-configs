@@ -2,6 +2,6 @@
 #  - !include common/base-binarysensor-status.yaml
 #
 platform: status
-name: "${upper_devicename} Status"
+name: "${devicename} Status"
 # icon: mdi:lan-connect
 device_class: connectivity
