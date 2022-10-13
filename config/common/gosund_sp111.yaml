@@ -8,7 +8,7 @@ esphome:
     then:
       - switch.turn_on: relay
 
-<<: !include common/base.yaml
+<<: !include base.yaml
 
 # .base-sensor-wifi: !include &base-sensor-wifi base-sensor-wifi.yaml
 # .base-sensor-uptime: !include &base-sensor-uptime base-sensor-uptime.yaml
@@ -17,7 +17,7 @@ esphome:
 # config from: https://community.home-assistant.io/t/gosund-sp111-with-esphome-power-measurement/194477
 
 binary_sensor:
-  - !include common/base-binarysensor-status.yaml
+  - !include base-binarysensor-status.yaml
   # switch relay off while holding
   # - platform: gpio
   #   id: button
@@ -40,10 +40,10 @@ binary_sensor:
       - switch.toggle: relay
 
 sensor:
-  - !include common/base-sensor-wifi.yaml
-  - !include common/base-sensor-uptime.yaml
-  - !include common/base-sensor-wattage.yaml
-  - !include common/base-sensor-vcc.yaml
+  - !include base-sensor-wifi.yaml
+  - !include base-sensor-uptime.yaml
+  - !include base-sensor-wattage.yaml
+  - !include base-sensor-vcc.yaml
   # see pinout https://templates.blakadder.com/gosund_SP111_v1_1.html
   - platform: hlw8012
     sel_pin:
@@ -56,22 +56,22 @@ sensor:
     change_mode_every: 4
     current_resistor: ${current_res}
     voltage_divider: ${voltage_div}
-    update_interval: 3s
+    update_interval: 5s
 
     current:
-      name: "${devicename} - Ampere"
+      name: "${devicename} Ampere"
       unit_of_measurement: A
       accuracy_decimals: 3
       icon: mdi:current-ac
 
     voltage:
-      name: "${devicename} - Volt"
+      name: "${devicename} Volt"
       unit_of_measurement: V
       accuracy_decimals: 1
       icon: mdi:flash-outline
 
     power:
-      name: "${devicename} - Watt"
+      name: "${devicename} Watt"
       unit_of_measurement: W
       id: "power_wattage"
       icon: mdi:gauge
@@ -105,7 +105,7 @@ switch:
 
   - platform: gpio
     pin: GPIO15
-    name: "${devicename} - Relais"
+    name: "${devicename} Relais"
     id: relay
     # icon: mdi:power-socket-eu
     # on_turn_on:
@@ -116,7 +116,7 @@ switch:
 light:
    # ... and then make a normal light out of it.
   - platform: monochromatic
-    name: "${devicename} - LED (Red)"
+    name: "${devicename} LED (Red)"
     output: led_red
     #id: led_red_hass
     # icon: mdi:led-on
@@ -154,3 +154,7 @@ status_led:
     inverted: True
   id: led_blue
 
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    timezone: Europe/Vienna
