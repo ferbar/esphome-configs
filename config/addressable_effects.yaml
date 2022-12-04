@@ -1,3 +1,5 @@
+---
+
     effects:
       - addressable_random_twinkle:
       - addressable_random_twinkle:
@@ -146,7 +148,8 @@
           update_interval: 50ms
           #update_interval: 300ms
           lambda: |-
-            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed),
+            addressableRoundEffectsLambda(it, [](AddressableLight &it) { initLedPosInfo(it); },
+                id(effectSpeed),
                 [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &, int colorPos1) {
                   return color1*value1 + color2*value2;
                 }
@@ -157,7 +160,8 @@
           update_interval: 50ms
           #update_interval: 300ms
           lambda: |-
-            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed),
+            addressableRoundEffectsLambda(it, [](AddressableLight &it) { initLedPosInfo(it); },
+                id(effectSpeed),
                 [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &, int colorPos1) {
                   return color1*(255-value1);
                 }
@@ -168,7 +172,8 @@
           update_interval: 50ms
           #update_interval: 300ms
           lambda: |-
-            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed),
+            addressableRoundEffectsLambda(it, [](AddressableLight &it) { initLedPosInfo(it); },
+                id(effectSpeed),
                 [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &, int colorPos1) {
                   return colorBlended*(255-value1);
                 }
@@ -179,7 +184,8 @@
           update_interval: 50ms
           #update_interval: 300ms
           lambda: |-
-            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed),
+            addressableRoundEffectsLambda(it, [](AddressableLight &it) { initLedPosInfo(it); },
+                id(effectSpeed),
                 [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &ledPosInfo, int colorPos1) {
                   int distance=(ledPosInfo.angle/2 /* => 0..255 */ - colorPos1) & 0xff;
                   return colorBlended*(distance);
@@ -191,12 +197,162 @@
           update_interval: 50ms
           #update_interval: 300ms
           lambda: |-
-            addressableRoundEffectsLambda(it, loopLedNumbers, loopDiameter, id(effectSpeed),
+            addressableRoundEffectsLambda(it, [](AddressableLight &it) { initLedPosInfo(it); },
+                id(effectSpeed),
                 [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &ledPosInfo, int colorPos1) {
                   int distance=(ledPosInfo.angle/2 /* => 0..255 */ - colorPos1) & 0xff; 
                   return rainbow2Color(distance * 6);
                 }
             );
+
+      - addressable_lambda:
+          name: "round rainbow ring"
+          update_interval: 50ms
+          #update_interval: 300ms
+          lambda: |-
+            addressableRoundEffectsLambda(it, [](AddressableLight &it) { initLedPosInfo(it); },
+                id(effectSpeed),
+                [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &ledPosInfo, int colorPos1) {
+                  return rainbow2Color(((ledPosInfo.radius - colorPos1) & 0xff) * 6);
+                }
+            );
+
+      - addressable_lambda:
+          name: "2D moving dots"
+          update_interval: 50ms
+          #update_interval: 300ms
+          lambda: |-
+            struct dot_t {
+              int x,y;
+              int dirx, diry;
+              esphome::Color color;
+            };
+            static const int ndots=10;
+            static const int dotR=100;
+            static const int solidCenterR=dotR/2;
+            static dot_t *dots=NULL;
+            if(!dots) {
+              ESP_LOGI(TAG, "init dots");
+              dots=(dot_t*) malloc(sizeof(dot_t)*ndots);
+              if(!dots) {
+                ESP_LOGE(TAG, "unable to allocate dots");
+                return;
+              }
+              for(int i=0; i < ndots; i++) {
+                dots[i].x=-500; // => reset dots
+              }
+            }
+            for(int i=0; i < ndots; i++) {
+              if(dots[i].x > 512+dotR || dots[i].x < -(dotR) ||
+                dots[i].y > 512+dotR || dots[i].y < -(dotR)) {
+
+                dots[i].color = esphome::Color::random_color();
+                switch(random(4)) {
+                case(0): { // top
+                  dots[i].x=-dotR; dots[i].y=random(0, 512);
+                  dots[i].dirx=random(1, 5);
+                  dots[i].diry=random(-4, +4);
+                  break; }
+                case(1): { // bottom
+                  dots[i].x=512+dotR; dots[i].y=random(0, 512);
+                  dots[i].dirx=random(-5, -1);
+                  dots[i].diry=random(-4, +4);
+                  break; }
+                case(2): { // left
+                  dots[i].y=-dotR; dots[i].x=random(0, 512);
+                  dots[i].diry=random(1, 5);
+                  dots[i].dirx=random(-4, +4);
+                  break; }
+                case(3): { // right
+                  dots[i].y=512+dotR; dots[i].x=random(0, 512);
+                  dots[i].diry=random(-5, -1);
+                  dots[i].dirx=random(-4, +4);
+                  break; }
+                }
+                ESP_LOGD(TAG, "init dot. x=%d y=%d dir x=%d y=%d", dots[i].x, dots[i].y, dots[i].dirx, dots[i].diry);
+              }
+            }
+
+            for(int i=0; i < ndots; i++) {
+              dots[i].x+=dots[i].dirx;
+              dots[i].y+=dots[i].diry;
+              // ESP_LOGD(TAG, "new pos[%d] x:%d y:%d", i, dots[i].x, dots[i].y);
+            }
+            addressableRoundEffectsLambda(it, [](AddressableLight &it) { initLedPosInfo(it); },
+                id(effectSpeed),
+                [](const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended, const LedPosInfo &ledPosInfo, int colorPos1) {
+                  esphome::Color color = esphome::Color::BLACK;
+                  for(int i=0; i < ndots; i++) {
+                    int distanceX=ledPosInfo.x - dots[i].x;
+                    int distanceY=ledPosInfo.y - dots[i].y;
+                    //ESP_LOGD(TAG, "distance[%d] ledx:%d dotsx:%d distanceX:%d | ledy:%d dotsy:%d distanceY:%d", i, 
+                    //    ledPosInfo.x, dots[i].x, distanceX, ledPosInfo.y, dots[i].y, distanceY);
+                    distanceX=abs(distanceX);
+                    distanceY=abs(distanceY);
+                    if(distanceX > dotR || distanceY > dotR) {
+                      continue;
+                    }
+                    // !!!! sqrt !!!!
+                    // sqrt() -solidCenterR damit innen ein gleich heller kreis ist
+                    int distance=255-((int) sqrtf(distanceX*distanceX+distanceY*distanceY) - solidCenterR)*255/(dotR-solidCenterR); // 100 => color * will 0...255
+                    distance=max(min(distance, 255),0);
+                    // ESP_LOGD(TAG, "[%d:%d] distance[%d]: %d", ledPosInfo.x, ledPosInfo.y, i, distance);
+                    color+=dots[i].color*distance;
+                  }
+                  return color;
+                }
+            );
+            // ESP_LOGD(TAG, "done");
+
+      - addressable_lambda:
+          name: "2D Rain"
+          lambda: |-
+            struct raindrop_t {
+              int x;
+              float pos;
+              float speed;
+            };
+            static int height=20;
+            static int width=20;
+            static int length=5;
+            static const int ndrops=10;
+            static raindrop_t *raindrops=NULL;
+            if(!raindrops) {
+              ESP_LOGE(TAG, "init raindrops");
+              raindrops=(raindrop_t *) malloc(sizeof(raindrop_t)*ndrops);
+              if(raindrops==NULL) {
+                ESP_LOGE(TAG, "error malloc");
+                return;
+              }
+              for(int i=0; i < ndrops; i++) {
+                raindrops[i].pos=height+length+1; // reinit
+              }
+            }
+
+            // ESP_LOGE(TAG, "init");
+            // reinit
+            for(int i=0; i < ndrops; i++) {
+              if(raindrops[i].pos > height + length) {
+                raindrops[i].pos=0;
+                raindrops[i].x=random(0,width-1);
+                // speed 2...7
+                raindrops[i].speed=random() / (float) RAND_MAX * 1.2 + 0.2;
+                ESP_LOGE(TAG, "init %d x=%d speed=%f", i, raindrops[i].x, raindrops[i].speed);
+              }
+            }
+
+            // ESP_LOGE(TAG, "set");
+            it.all() = esphome::Color::BLACK;
+            for(int i=0; i < ndrops; i++) {
+              int ledPos=raindrops[i].x*height+raindrops[i].pos;
+              for(int j=0; j < length; j++) {
+                // ESP_LOGE(TAG, "[%d] setting [%d] => .x:%d .height:%d .pos:%f", i, j, raindrops[i].x, height, raindrops[i].pos);
+                if(raindrops[i].pos+j >= height) continue;
+                it[ledPos+j]=current_color*(255/length*(j+0.3));
+              }
+              raindrops[i].pos+=raindrops[i].speed;
+            }
+            // ESP_LOGE(TAG, "done");
 
       - addressable_lambda:
           name: "candles"
@@ -289,7 +445,7 @@
 
 
       - addressable_lambda:
-          name: "flicker"
+          name: "color flicker"
           update_interval: 16ms
           lambda: |-
             static int *target=NULL;
