@@ -7,8 +7,11 @@ esphome:
   platform: ESP8266
   board: d1_mini
   includes:
-    - colorTempToRGB.h
-    - starsLambda.h
+    - src/colorTempToRGB.h
+    - src/HSL2RGB.h
+    - src/starsLambda.h
+    - led_ws2812b_curtain_global_vars.h
+    - src/addressableRoundEffects.h
   on_boot:
     then:
       #- light.turn_on: ${devicename}_WS2812b_Light
@@ -31,6 +34,26 @@ sensor:
 switch:
   - !include common/base-switch-reset.yaml
 
+globals:
+  - id: effectSpeed
+    type: int
+    restore_value: True
+    initial_value: '2'
+
+number:
+  - platform: template
+    name: "Effect Speed"
+    min_value: 1
+    max_value: 10
+    step: 1
+    lambda: |-
+      ESP_LOGD("main", "Returning speed ********************************** %f ****************", id(effectSpeed));
+      return id(effectSpeed);
+    set_action:
+      lambda: |-
+        ESP_LOGD("main", "Setting speed ********************************** %f ****************", x);
+        id(effectSpeed)=x;
+
 
 light:
   # ... and then make a light out of it.
@@ -38,17 +61,18 @@ light:
 #    name: "${upper_devicename} Blue LED"
 #    output: ${devicename}_led
 
-  - platform: fastled_clockless
-    chipset: WS2812b
+  - platform: neopixelbus
+    type: RGB
+    variant: WS2812x
     pin: D1
 # led strip
 #    num_leds: 300
 #    num_leds: 512
 #    rgb_order: GRB
 # WS2811 outdoor:
-    num_leds: 100
+    num_leds: 400
 #    num_leds: 150
-    rgb_order: RGB
+#    rgb_order: RGB
 #    gamma_correct: 2
 
     on_turn_on:
