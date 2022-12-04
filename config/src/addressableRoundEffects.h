@@ -13,42 +13,17 @@ public:
 	int x=0; // 0 ... 511
 	int y=0; // 0 ... 511
 	int angle=0; // 0 ... 511 -> 360°
+	int radius=0; // distance to 255:255
 };
 
-
 #define TAG "addressableRoundEffects"
+static int numLeds=-1;
+static LedPosInfo * leds=NULL;
 
 /**
- *
- * @loopLedStartNumbers: array mit welcher led# ein neuer ring anfängt
- * @loopDiameter: 255 = max
- * @colorCalc: color1, value1, color2, value2
+ * TODO: rename: diameter => radius
  */
-void addressableRoundEffectsLambda(AddressableLight &it, int *loopLedStartNumbers, int *loopDiameter, int effectSpeed,
-	esphome::Color colorCalc(const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended,
-		const LedPosInfo &ledPosInfo, int colorPos1) ) {
-	// int x = ESP.getFreeHeap();
-	// ESP_LOGD(TAG, "free ram: %d", x);
-	static int numLeds=-1;
-	static LedPosInfo * leds=NULL;
-
-// moving colors left to right:
-// [0] ... -512 -> -1
-// [1] ... 0 -> 511
-// [2] ... 512 -> 1023
-	static esphome::Color movingColor[3];
-	static int colorPos=-512;
-
-	static float hue=0;
-
-	// it.size() - Number of LEDs
-	// it[num] - Access the LED at index num.
-	// Set the LED at num to the given r, g, b values
-	// it[num] = esphome::Color(r, g, b);
-	// Get the color at index num (esphome::Color instance)
-	// it[num].get();
-	// n leds
-	if(numLeds == -1)  {
+void initLedPosInfoLoops(AddressableLight &it, int *loopLedStartNumbers, int *loopDiameter) {
 		numLeds=it.size();
 		leds = new LedPosInfo[numLeds];
 		if(!leds) {
@@ -69,6 +44,7 @@ void addressableRoundEffectsLambda(AddressableLight &it, int *loopLedStartNumber
 				leds[ledNum].x=sin(PI*2*ledNumInLoop/ledsInLoop)*loopDiameter[loopNum] + 256;
 				leds[ledNum].y=cos(PI*2*ledNumInLoop/ledsInLoop)*loopDiameter[loopNum] + 256;
 				leds[ledNum].angle=511*ledNumInLoop/ledsInLoop;
+				leds[ledNum].radius=loopDiameter[loopNum];
 				ESP_LOGD(TAG, "init led %d (loop %d) [%d:%d]", ledNum, loopNum, leds[ledNum].x, leds[ledNum].y);
 				ledNum++;
 			}
@@ -78,6 +54,62 @@ void addressableRoundEffectsLambda(AddressableLight &it, int *loopLedStartNumber
 			}
 			loopNum++;
 		}
+}
+
+void initLedPosInfoMatrix(AddressableLight &it, int width, int height) {
+	numLeds=it.size();
+	leds = new LedPosInfo[numLeds];
+	if(!leds) {
+		ESP_LOGE(TAG, "init leds failed");
+		numLeds=-1;
+		return;
+	}
+	for(int y=0; y < height; y++) {
+		for(int x=0; x < width; x++) {
+			int ledNum=y*width+x;
+			// das +rand machts ein bissl schöner, pos in der range 0 ... 512
+			leds[ledNum].x=x*(512-6)/(width-1)+rand()/(RAND_MAX/10);
+			leds[ledNum].y=y*512/(height-1);
+			leds[ledNum].angle=atan2f(y-(height/2),x-(width/2))*81 /* 255/pi */ + 255;
+			int distanceX=255-leds[ledNum].x;
+			int distanceY=255-leds[ledNum].y;
+			leds[ledNum].radius=sqrt(distanceX*distanceX+distanceY*distanceY);
+			ESP_LOGD(TAG, "init led %d [%d:%d] angle=%d radius=%d", ledNum, leds[ledNum].x, leds[ledNum].y, leds[ledNum].angle, leds[ledNum].radius);
+		}
+	}
+}
+
+/**
+ *
+ * @loopLedStartNumbers: array mit welcher led# ein neuer ring anfängt
+ * @loopDiameter: 255 = max
+ * @colorCalc: color1, value1, color2, value2
+ */
+void addressableRoundEffectsLambda(AddressableLight &it, void initLedPosInfo(AddressableLight &it), int effectSpeed,
+	esphome::Color colorCalc(const esphome::Color &color1, int value1, const esphome::Color &color2, int value2, const esphome::Color &colorBlended,
+		const LedPosInfo &ledPosInfo, int colorPos1) ) {
+	// int x = ESP.getFreeHeap();
+	// ESP_LOGD(TAG, "free ram: %d", x);
+
+// moving colors left to right:
+// [0] ... -512 -> -1
+// [1] ... 0 -> 511
+// [2] ... 512 -> 1023
+	static esphome::Color movingColor[3];
+	static int colorPos=-512;
+
+	static float hue=0;
+
+	// it.size() - Number of LEDs
+	// it[num] - Access the LED at index num.
+	// Set the LED at num to the given r, g, b values
+	// it[num] = esphome::Color(r, g, b);
+	// Get the color at index num (esphome::Color instance)
+	// it[num].get();
+	// n leds
+	if(numLeds == -1)  {
+		initLedPosInfo(it);
+
 		movingColor[0] = esphome::Color::random_color();
 		movingColor[1] = esphome::Color::BLACK;
 		movingColor[2] = esphome::Color::BLACK;
