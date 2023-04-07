@@ -1,0 +1,53 @@
+substitutions:
+  devicename: "rfid_reader"
+  upper_devicename: "RFID Reader"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: nodemcuv2
+  includes:
+    # https://github.com/AlexandreUSA/esphome-wiegand-reader.git
+    # patch mit if(_code < 0x1000000) {
+    #+                    keyCodes = str_snprintf("%02X", 3, (unsigned char) _code) +"-"+str_snprintf("%02X", 3, (unsigned char) (_code >> 8 ) )+"-"
+    #+                        +str_snprintf("%02X", 3, (unsigned char) (_code >> 16 ) );....
+    - esphome-wiegand-reader/wiegand_device.h
+
+<<: !include common/base.yaml
+
+# override ....
+logger:
+#  baud_rate: 0
+  level: DEBUG
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+# Text sensor to return code or card ID
+text_sensor:
+- platform: custom
+  lambda: |-
+    auto wiegand = new WiegandReader(D1, D2);
+    App.register_component(wiegand);
+    return {wiegand};
+  text_sensors:
+    name: "Card ID"
+    on_value:
+      then:
+        - homeassistant.tag_scanned: !lambda |-
+            return x;
+
+status_led:
+  pin:
+    number: GPIO02
+    #inverted: True
+    inverted: False
+  id: led_blue
