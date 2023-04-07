@@ -1,0 +1,26 @@
+
+substitutions:
+  devicename: "ug_lager"
+  upper_devicename: "UG Lager"
+
+<<: !include sonoff_d1.yaml
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+  - platform: gpio
+    pin:
+      number: GPIO04
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: $devicename button
+  - platform: gpio
+    pin:
+      number: GPIO05
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: $devicename pir
+    device_class: motion
