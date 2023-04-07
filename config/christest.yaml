@@ -3,22 +3,32 @@ substitutions:
   upper_devicename: "Chris Test"
 
 esphome:
-  name: "${devicename}"
-  platform: ESP8266
-  #board: esp01
-  board: esp8285
+  name: $devicename
+  # platform: ESP8266
+  on_boot:
+    then:
+      - light.turn_on:
+          id: leds
+#          brightness: 50%
+
+esp8266:
+  # 4MB flash
+  board: esp12e
+  # board: esp01_1m
+  # board: esp8285
+  # restore_from_flash: true
 
 <<: !include common/base.yaml
 
 binary_sensor:
   - !include common/base-binarysensor-status.yaml
-  - platform: gpio
-    pin:
-      number: GPIO13
-      mode: INPUT_PULLUP
-      inverted: True
-    # name: "${devicename} - Schalter Status"
-    id: "${devicename}_button_state"
+#  - platform: gpio
+#    pin:
+#      number: GPIO13
+#      mode: INPUT_PULLUP
+#      inverted: True
+#    # name: "${devicename} - Schalter Status"
+#    id: "${devicename}_button_state"
 #  - platform: gpio
 #    pin: GPIO03
 #    name: ${upper_devicename} input
@@ -33,25 +43,47 @@ switch:
   - !include common/base-switch-reset.yaml
 
 light:
-#  - platform: binary
-  - platform: monochromatic
-    name: "${upper_devicename} out1"
-    output: 'gpio_out1'
-#  - platform: binary
-  - platform: monochromatic
-    name: "${upper_devicename} out2"
-    output: 'gpio_out2'
+  - platform: rgbww
+    name: "${upper_devicename} leds"
+    cold_white: 'gpio_cw'
+    blue: 'gpio_b'
+    green: 'gpio_g'
+    red: 'gpio_r'
+    warm_white: 'gpio_ww'
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+    id: leds
+  - platform: status_led
+    name: "${devicename} blue led"
+    pin: GPIO02
 
 output:
 #  - platform: gpio
   - platform: esp8266_pwm
-    pin: GPIO00
-    inverted: true
-    id: gpio_out1
+    pin: GPIO5
+    #inverted: true
+    id: gpio_cw
+    #frequency: 4000Hz
   - platform: esp8266_pwm
-    pin: GPIO02
-    inverted: true
-    id: gpio_out2
+    pin: GPIO4
+    #inverted: true
+    id: gpio_b
+    #frequency: 4000Hz
+  - platform: esp8266_pwm
+    pin: GPIO14
+    #inverted: true
+    id: gpio_g
+    #frequency: 4000Hz
+  - platform: esp8266_pwm
+    pin: GPIO12
+    #inverted: true
+    id: gpio_r
+    #frequency: 4000Hz
+  - platform: esp8266_pwm
+    pin: GPIO13
+    #inverted: true
+    id: gpio_ww
+    #frequency: 4000Hz
 
 
 
