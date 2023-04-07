@@ -1,0 +1,97 @@
+substitutions:
+  devicename: "led_ws2812b_2"
+  upper_devicename: "LED ws2812b 2"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: d1_mini
+  includes:
+    - src/colorTempToRGB.h
+    - src/HSL2RGB.h
+    - src/starsLambda.h
+    - led_ws2812b_curtain_global_vars.h
+    - src/addressableRoundEffects.h
+  on_boot:
+    then:
+      #- light.turn_on: ${devicename}_WS2812b_Light
+      - light.turn_on:
+          id: WS2812b
+          brightness: 50%
+
+
+<<: !include common/base.yaml
+
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+globals:
+  - id: effectSpeed
+    type: int
+    restore_value: True
+    initial_value: '2'
+
+number:
+  - platform: template
+    name: "Effect Speed"
+    min_value: 1
+    max_value: 10
+    step: 1
+    lambda: |-
+      ESP_LOGD("main", "Returning speed ********************************** %f ****************", id(effectSpeed));
+      return id(effectSpeed);
+    set_action:
+      lambda: |-
+        ESP_LOGD("main", "Setting speed ********************************** %f ****************", x);
+        id(effectSpeed)=x;
+
+
+light:
+  # ... and then make a light out of it.
+#  - platform: monochromatic
+#    name: "${upper_devicename} Blue LED"
+#    output: ${devicename}_led
+
+  - platform: neopixelbus
+    type: RGB
+    variant: WS2812x
+    pin: D1
+# led strip
+#    num_leds: 300
+#    num_leds: 512
+#    rgb_order: GRB
+# WS2811 outdoor:
+    num_leds: 400
+#    num_leds: 150
+#    rgb_order: RGB
+#    gamma_correct: 2
+
+    on_turn_on:
+      - light.turn_on:
+          id: WS2812b
+#          effect: "starry sky"
+#          effect: "color change"
+          effect: "candles"
+          red: 1
+          green: 0.60
+          blue: 0.2
+    name: "$upper_devicename WS2812b Light"
+    id: WS2812b
+    <<: !include addressable_effects.yaml
+
+status_led:
+  pin:
+    number: GPIO02
+    #inverted: True
+    inverted: False
+  id: led_blue
+
