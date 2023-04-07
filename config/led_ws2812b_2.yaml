@@ -10,7 +10,7 @@ esphome:
     - src/colorTempToRGB.h
     - src/HSL2RGB.h
     - src/starsLambda.h
-    - led_ws2812b_curtain_global_vars.h
+    - led_ws2812b_weihnachtsbaum_global_vars.h
     - src/addressableRoundEffects.h
   on_boot:
     then:
@@ -42,7 +42,7 @@ globals:
 
 number:
   - platform: template
-    name: "Effect Speed"
+    name: "$devicename Effect Speed"
     min_value: 1
     max_value: 10
     step: 1
@@ -70,8 +70,8 @@ light:
 #    num_leds: 512
 #    rgb_order: GRB
 # WS2811 outdoor:
-    num_leds: 400
-#    num_leds: 150
+#    num_leds: 400
+    num_leds: 150
 #    rgb_order: RGB
 #    gamma_correct: 2
 
@@ -84,7 +84,7 @@ light:
           red: 1
           green: 0.60
           blue: 0.2
-    name: "$upper_devicename WS2812b Light"
+    name: "$devicename WS2812b Light"
     id: WS2812b
     <<: !include addressable_effects.yaml
 
