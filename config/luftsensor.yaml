@@ -18,6 +18,9 @@ esphome:
 
 <<: !include common/base.yaml
 
+#logger:
+#  level: INFO
+
 i2c:
 #   default
 #  - sda: GPIO4
@@ -72,13 +75,12 @@ bme680_bsec:
     # Interval at which to save BSEC state
     # ------------------------------------
     # Default: 6h
-    state_save_interval: 48h
+    #state_save_interval: 48h
 
 binary_sensor:
   - !include common/base-binarysensor-status.yaml
 
 sensor:
-  - !include common/base-sensor-wifi.yaml
   - !include common/base-sensor-uptime.yaml
   - !include common/base-sensor-vcc.yaml
 
