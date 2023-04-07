@@ -10,15 +10,21 @@ esphome:
 # !!!!!!! RX und TX sind GPIO01 + GPIO03, die verwenden wir für PIR in !!!!!!!!!!!!!!!!!11
 <<: !include common/base.yaml
 
+# !!!!!!! 20230312 hint: selbst mit nur ota + wifi kann man den nicht über ota flashen, zu wenig freier speicher
+# Enable over the air updates
+#ota:
+#wifi: !include common/wifi.yaml
 
 binary_sensor:
 #  - !include common/base-binarysensor-status.yaml
+#  unten
   - platform: gpio
     pin: GPIO03
     name: $upper_devicename pir1
     device_class: motion
-    filters:
-      - invert:
+#    filters:
+#      - invert:
+#  oben
   - platform: gpio
     pin: GPIO01
     name: $upper_devicename pir2
