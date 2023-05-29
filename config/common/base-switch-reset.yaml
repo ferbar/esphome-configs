@@ -1,4 +1,4 @@
 # switch:
 #   - !include common/base-switch-reset.yaml
 platform: restart
-name: "${devicename} restart"
+name: "${devicename} Restart"
