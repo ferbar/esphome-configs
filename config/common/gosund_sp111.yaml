@@ -87,6 +87,7 @@ output:
 #    id: led_blue
 
 switch:
+  - !include base-switch-reset.yaml
 #  - platform: template
 #    name: "${devicename} - Schalter"
 #    icon: mdi:power
