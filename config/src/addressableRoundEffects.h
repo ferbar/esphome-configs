@@ -16,6 +16,7 @@ public:
 	int radius=0; // distance to 255:255
 };
 
+#undef TAG
 #define TAG "addressableRoundEffects"
 static int numLeds=-1;
 static LedPosInfo * leds=NULL;
