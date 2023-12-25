@@ -13,3 +13,7 @@ fast_connect:
 # 20210518 hatta mit esp8266 ned wolln
 #captive_portal:
 
+# flash IP adress
+# HINT: es gibt auch ein esphome rename ....
+#use_address: 192.168.178.188
+
