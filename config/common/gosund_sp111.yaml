@@ -148,12 +148,18 @@ light:
 #  - platform: binary
 #    name: "${devicename} - LED (Blue)"
 #    output: led_blue
+  - platform: status_led
+    name: "${devicename} LED (Blue)"
+    pin:
+      number: GPIO02
+      inverted: True
+    id: led_blue
 
-status_led:
-  pin:
-    number: GPIO02
-    inverted: True
-  id: led_blue
+#status_led:
+#  pin:
+#    number: GPIO02
+#    inverted: True
+#  id: led_blue
 
 time:
   - platform: homeassistant
