@@ -1,0 +1,100 @@
+substitutions:
+  devicename: "led_ws2812b_eibe"
+  upper_devicename: "LED ws2812b Eibe"
+
+esphome:
+  name: $devicename
+  platform: ESP8266
+  board: d1_mini
+  includes:
+    - src/colorTempToRGB.h
+    - src/HSL2RGB.h
+    - src/starsLambda.h
+    - led_ws2812b_weihnachtsbaum_global_vars.h
+    - src/addressableRoundEffects.h
+  on_boot:
+    then:
+      - light.turn_on:
+          id: WS2812b
+# effect unten beim turn on handler einstellen!
+#          effect: "starry sky"
+#          effect: "color change"
+          brightness: 50%
+
+
+<<: !include common/base.yaml
+
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+globals:
+  - id: effectSpeed
+    type: int
+    restore_value: True
+    initial_value: '2'
+
+number:
+  - platform: template
+    name: "$upper_devicename Effect Speed"
+    min_value: 1
+    max_value: 10
+    step: 1
+#      ESP_LOGD("main", "Returning speed ********************************** %f ****************", id(effectSpeed));
+    lambda: |-
+      return id(effectSpeed);
+    set_action:
+#        ESP_LOGD("main", "Setting speed ********************************** %f ****************", x);
+      lambda: |-
+        id(effectSpeed)=x;
+
+
+light:
+  - platform: neopixelbus
+# deprecated
+#  - platform: fastled_clockless
+#    chipset: WS2812b
+    pin: D1
+# WS2811 outdoor:
+    num_leds: 150
+    type: RGB
+    variant: WS2811
+#    gamma_correct: 2
+
+    on_turn_on:
+      - light.turn_on:
+          id: WS2812b
+          effect: "starry sky"
+#          effect: "candles"
+#          red: 1
+#          green: 0.75
+#          blue: 0.2
+#          effect: "color change"
+#  - platform: neopixelbus
+##    type: RGB
+##    variant: WS2812X
+#    variant: WS2812
+##    pin: GPIO3
+#    pin: GPIO2
+#    num_leds: 8
+##    method: ESP8266_DMA
+#    method: ESP8266_UART1
+##    rgb_order: BRG
+    name: "$upper_devicename led strip"
+    id: WS2812b
+    <<: !include addressable_effects.yaml
+
+  - platform: status_led
+    name: "${upper_devicename} blue led"
+    pin:
+      number: GPIO02
+      inverted: True
+

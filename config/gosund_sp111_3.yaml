@@ -1,0 +1,9 @@
+substitutions:
+  devicename: "gosund_sp111_3"
+  upper_devicename: "Gosund SP111 3"
+  # Higher value gives lower watt readout
+  current_res: "0.00242"
+  # Lower value gives lower voltage readout
+  voltage_div: "758"
+
+<<: !include common/gosund_sp111.yaml
