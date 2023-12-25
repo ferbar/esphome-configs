@@ -25,6 +25,7 @@ static LedPosInfo * leds=NULL;
  * TODO: rename: diameter => radius
  */
 void initLedPosInfoLoops(AddressableLight &it, int *loopLedStartNumbers, int *loopDiameter) {
+		ESP_LOGD(TAG, "initLedPosInfoLoops(numLeds=%d) X/Y pos range 0...511", numLeds);
 		numLeds=it.size();
 		leds = new LedPosInfo[numLeds];
 		if(!leds) {
@@ -46,11 +47,11 @@ void initLedPosInfoLoops(AddressableLight &it, int *loopLedStartNumbers, int *lo
 				leds[ledNum].y=cos(PI*2*ledNumInLoop/ledsInLoop)*loopDiameter[loopNum] + 256;
 				leds[ledNum].angle=511*ledNumInLoop/ledsInLoop;
 				leds[ledNum].radius=loopDiameter[loopNum];
-				ESP_LOGD(TAG, "init led %d (loop %d) [%d:%d]", ledNum, loopNum, leds[ledNum].x, leds[ledNum].y);
+				ESP_LOGD(TAG, "init led %d (loop %d) [%d:%d] angle=%d radius=%d", ledNum, loopNum, leds[ledNum].x, leds[ledNum].y, leds[ledNum].angle, leds[ledNum].radius);
 				ledNum++;
 			}
 			if(ledNum != loopLedStartNumbers[loopNum]) {
-				ESP_LOGW(TAG, "config error ledNum (%d) != loopLedStartNumbers[%d] (%d) ", ledNum, loopNum, loopLedStartNumbers[loopNum]);
+				ESP_LOGW(TAG, "config error ledNum (%d) != loopLedStartNumbers[%d] (= %d) ", ledNum, loopNum, loopLedStartNumbers[loopNum]);
 				break;
 			}
 			loopNum++;
