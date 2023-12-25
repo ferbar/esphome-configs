@@ -87,10 +87,9 @@ light:
     id: WS2812b
     <<: !include addressable_effects.yaml
 
-status_led:
-  pin:
-    number: GPIO02
-    #inverted: True
-    inverted: False
-  id: led_blue
+  - platform: status_led
+    name: "${devicename} blue led"
+    pin:
+      number: GPIO02
+      inverted: True
 
