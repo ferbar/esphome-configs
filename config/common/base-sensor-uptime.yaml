@@ -1,4 +1,5 @@
 platform: uptime
-name: "${devicename} Uptime"
+# 202312 bei upper_devicename kürzt der HA den namen
+name: "${upper_devicename} Uptime"
 update_interval: 60s
 icon: mdi:clock-outline

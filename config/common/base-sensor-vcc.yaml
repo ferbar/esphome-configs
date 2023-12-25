@@ -2,9 +2,11 @@
 #   - !include common/base-sensor-vcc.yaml
 #
 #   Bug: funktioniert nicht gleichzeitig mit A0 ...
+# 202312:
+#   wenn man upper_devicename verwendet kürz der HA den namen
 
 platform: adc
 pin: VCC
 #pin: A0
-name: "${devicename} VCC Volt"
+name: "${upper_devicename} VCC Volt"
 icon: mdi:flash-outline

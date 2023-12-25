@@ -3,8 +3,8 @@
 
 platform: wifi_info
 ip_address:
-  name: "${devicename} IP"
+  name: "${upper_devicename} IP"
   icon: mdi:ip-network-outline
 mac_address:
-  name: "${devicename} Mac"
+  name: "${upper_devicename} Mac"
   icon: mdi:network-outline
