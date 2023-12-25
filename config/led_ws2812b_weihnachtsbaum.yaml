@@ -42,7 +42,7 @@ globals:
 
 number:
   - platform: template
-    name: "$devicename Effect Speed"
+    name: "$upper_devicename Effect Speed"
     min_value: 1
     max_value: 10
     step: 1
@@ -94,20 +94,13 @@ light:
           red: 1
           green: 0.60
           blue: 0.2
-    name: "$devicename WS2812b Light"
+    name: "$upper_devicename led strip"
     id: WS2812b
     <<: !include addressable_effects.yaml
 
   - platform: status_led
-    name: "${devicename} blue led"
+    name: "${upper_devicename} blue led"
     pin:
       number: GPIO02
       inverted: True
-
-#status_led:
-#  pin:
-#    number: GPIO02
-#    #inverted: True
-#    inverted: False
-#  id: led_blue
 
