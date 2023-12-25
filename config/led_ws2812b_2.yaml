@@ -62,18 +62,28 @@ light:
 #    output: ${devicename}_led
 
   - platform: neopixelbus
-    type: RGB
-    variant: WS2812x
     pin: D1
 # led strip
+#    variant: WS2812x
+#    type: RGB
 #    num_leds: 300
 #    num_leds: 512
 #    rgb_order: GRB
 # WS2811 outdoor:
 #    num_leds: 400
-    num_leds: 150
+#    num_leds: 150
 #    rgb_order: RGB
 #    gamma_correct: 2
+#   outdoor birnen:
+    #variant: WS2811
+    #variant: 400KBPS
+    #num_leds: 20
+    #type: BRG
+    #invert: true
+# 12V halb kugeln:
+    variant: ws2811
+    num_leds: 150
+    type: RGB
 
     on_turn_on:
       - light.turn_on:
@@ -88,10 +98,16 @@ light:
     id: WS2812b
     <<: !include addressable_effects.yaml
 
-status_led:
-  pin:
-    number: GPIO02
-    #inverted: True
-    inverted: False
-  id: led_blue
+  - platform: status_led
+    name: "${devicename} blue led"
+    pin:
+      number: GPIO02
+      inverted: True
+
+#status_led:
+#  pin:
+#    number: GPIO02
+#    #inverted: True
+#    inverted: False
+#  id: led_blue
 
