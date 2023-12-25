@@ -1,6 +1,6 @@
 substitutions:
-  devicename: "led_ws2812b_2"
-  upper_devicename: "LED ws2812b 2"
+  devicename: "led_ws2812b_weihnachtsbaum"
+  upper_devicename: "LED ws2812b Weihnachtsbaum"
 
 esphome:
   name: $devicename
