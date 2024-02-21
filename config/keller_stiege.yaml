@@ -6,6 +6,12 @@ esphome:
   name: $devicename
   platform: ESP8266
   board: esp01
+  on_boot:
+    then:
+      - light.turn_on:
+          id: led_strip
+          # 100% => 18W, 80% => 12W
+          brightness: 80%
 
 # !!!!!!! RX und TX sind GPIO01 + GPIO03, die verwenden wir für PIR in !!!!!!!!!!!!!!!!!11
 <<: !include common/base.yaml
@@ -53,6 +59,6 @@ output:
 light:
   - platform: monochromatic
     name: "$upper_devicename Led strip light"
-    #id: keller_gang_led_strip_light
+    id: led_strip
     output: gpio_out2
 
