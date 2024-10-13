@@ -8,6 +8,7 @@ api:
 
 # Enable over the air updates
 ota:
+  platform: esphome
 
 wifi: !include wifi.yaml
 
