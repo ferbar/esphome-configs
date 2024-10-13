@@ -4,8 +4,6 @@ substitutions:
 
 esphome:
   name: $devicename
-  platform: ESP8266
-  board: d1_mini
   includes:
     - src/colorTempToRGB.h
     - src/HSL2RGB.h
@@ -21,6 +19,10 @@ esphome:
 #          effect: "color change"
           brightness: 50%
 
+esp8266:
+  board: d1_mini
+  framework:
+    version: recommended
 
 <<: !include common/base.yaml
 
