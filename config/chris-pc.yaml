@@ -1,0 +1,140 @@
+# esphome compile chris-pc.yaml
+#
+substitutions:
+  devicename: "chris-pc"
+  upper_devicename: "Chris PC"
+
+esphome:
+  name: $devicename
+#  platform: HOST
+
+# Enable logging
+logger:
+
+host:
+  # eth0
+  mac_address: 04:7c:16:4d:ec:12
+
+#mdns:
+#  id: mdns_mdnscomponent
+#  disabled: true
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_key
+
+dbus:
+
+#web_server:
+#  port: 8123
+
+switch:
+  - name: "${upper_devicename} Amarok Play Switch"
+    platform: template
+    #  return id(my_custom_switch).state;
+    lambda: |-
+      return id(playback_status).state == "Playing";
+    id: my_custom_switch
+    optimistic: true
+    turn_on_action:
+    - logger.log: "Switch Turned On!"
+    # dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.amarok /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Play
+    - dbus.send:
+        dbus_destination: org.mpris.MediaPlayer2.amarok
+        dbus_path: /org/mpris/MediaPlayer2
+        dbus_interface: org.mpris.MediaPlayer2.Player
+        # dbus_method: PlayPause
+        dbus_method: Play
+        dbus_arg: []
+    turn_off_action:
+    - logger.log: "Switch Turned Off!"
+    - dbus.send:
+        dbus_destination: org.mpris.MediaPlayer2.amarok
+        dbus_path: /org/mpris/MediaPlayer2
+        dbus_interface: org.mpris.MediaPlayer2.Player
+        dbus_method: Stop
+        dbus_arg: []
+
+
+  - name: "${upper_devicename} Screen Lock"
+    platform: template
+    lambda: |-
+      return id(lock_active).state == "true";
+    # id: lock_switch
+    optimistic: true
+    turn_on_action:
+    - logger.log: "Lock Switch Turned On!"
+    # dbus-send --session --print-reply --dest=org.freedesktop.ScreenSaver /ScreenSaver org.freedesktop.ScreenSaver.Lock
+    - dbus.send:
+        dbus_destination: org.freedesktop.ScreenSaver 
+        dbus_path: /ScreenSaver
+        dbus_interface: org.freedesktop.ScreenSaver
+        dbus_method: Lock
+        dbus_arg: []
+    turn_off_action:
+    - logger.log: "Switch Turned Off!"
+    - dbus.send:
+        dbus_destination: org.freedesktop.ScreenSaver 
+        dbus_path: /ScreenSaver
+        dbus_interface: org.freedesktop.ScreenSaver
+        dbus_method: Unlock
+        dbus_arg: []
+
+
+
+# fixme todo!!!! wenn eine option fehlt dann kommt a sinnlose fehlermeldungen !!!!!!!!!!!!!!!!!!!!
+# mit qdbusviewer-qt5 schaun
+# dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.amarok /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'
+text_sensor:
+#  - !include common/base-text-sensor-version.yaml
+
+  - platform: "dbus"
+    dbus_destination: "org.mpris.MediaPlayer2.amarok"
+    dbus_path: "/org/mpris/MediaPlayer2"
+    dbus_interface: "org.freedesktop.DBus.Properties"
+    dbus_method: Get
+#    dbus_properties: org.freedesktop.DBus.Properties
+    dbus_arg:
+      - "org.mpris.MediaPlayer2.Player"
+      - "Metadata"
+    name: "${upper_devicename} amarok title, artist"
+    icon: "mdi:cube-outline"
+    property_separator: ' - '
+    properties:
+      - "xesam:artist"
+      - "xesam:title"
+
+  # dbus-send --print-reply --dest=org.mpris.MediaPlayer2.amarok /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'PlaybackStatus'
+  - platform: dbus
+    dbus_destination: org.mpris.MediaPlayer2.amarok
+    dbus_path: /org/mpris/MediaPlayer2
+    dbus_method: Get
+    dbus_interface: org.freedesktop.DBus.Properties
+    dbus_arg:
+      - org.mpris.MediaPlayer2.Player
+      - PlaybackStatus
+    name: "${upper_devicename} amarok status"
+    icon: mdi:cube-outline
+    properties:
+      - "PlaybackStatus"
+    id: playback_status
+
+  # dbus-send --session --print-reply --dest=org.freedesktop.ScreenSaver --type=method_call /org/freedesktop/ScreenSaver org.freedesktop.ScreenSaver.GetActive
+  - platform: dbus
+    dbus_destination: org.freedesktop.ScreenSaver
+    dbus_path: /org/freedesktop/ScreenSaver
+    dbus_interface: org.freedesktop.ScreenSaver
+    dbus_method: GetActive
+    dbus_arg: []
+    name: "${upper_devicename} lock status"
+    properties:
+      - "dummy"
+    id: lock_active
+
+  # smart register !!! nur von sata platten
+  # gdbus call --system --dest org.freedesktop.UDisks2 --object-path "/org/freedesktop/UDisks2/drives/WDC_WD40EFRX_68N32N0_WD_WCC7K1PK3U4A" --method "org.freedesktop.UDisks2.Drive.Ata.SmartGetAttributes" '{}' 
+
+#  - platform: host_filesystem
+#    sda:
+#      name: "${upper_devicename} sda"
