@@ -1,11 +1,12 @@
-ssid: !secret wifi_name
-password: !secret wifi_pass
-fast_connect:
-  on
+networks:
+- ssid: !secret wifi_name
+  password: !secret wifi_pass
+  # connect to first/hidden wifi
+  #fast_connect:
+  #  on
+  hidden: false
+
   # Enable fallback hotspot (captive portal) in case wifi connection fails
-# ap:
-#   ssid: "${plug_name} Hotspot"
-#   password: "Le_PW"
 #ap:
 #  ssid: "${upper_devicename} Fallback Hotspot"
 #  password: !secret wifi_pass
