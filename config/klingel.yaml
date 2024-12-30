@@ -1,0 +1,48 @@
+substitutions:
+  devicename: "klingel"
+  upper_devicename: "Klingel"
+
+esphome:
+  name: $devicename
+  on_boot:
+    then:
+
+esp8266:
+  board: esp12e
+  framework:
+    version: recommended
+
+<<: !include common/base.yaml
+
+
+binary_sensor:
+  - !include common/base-binarysensor-status.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+  - !include common/base-sensor-vcc.yaml
+
+switch:
+  - !include common/base-switch-reset.yaml
+  - platform: template
+    name: "${upper_devicename} Klingel"
+    turn_on_action:
+      - output.turn_on: klingel
+      - delay: 1s
+      - output.turn_off: klingel
+    turn_off_action:
+      - output.turn_off: klingel
+
+output:
+  - platform: gpio
+    id: klingel
+    pin: GPIO4
+
+light:
+  - platform: status_led
+    name: "${upper_devicename} blue led"
+    pin:
+      number: GPIO02
+      inverted: True
+
