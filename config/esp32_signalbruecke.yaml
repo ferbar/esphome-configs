@@ -1,0 +1,95 @@
+substitutions:
+  devicename: esp32_signalbruecke
+  upper_devicename: "ESP32 Signalbrücke"
+
+esphome:
+  name: $devicename
+  platform: ESP32
+  board: esp32dev
+
+<<: !include common/base.yaml
+
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+#  - !include common/base-sensor-vcc.yaml
+
+output:
+#  - platform: ledc
+  - platform: gpio
+    pin: GPIO13
+    id: led1g
+    inverted: true
+  - platform: gpio
+    id: led1r
+    pin: GPIO15
+    inverted: true
+  - platform: gpio
+    id: led2g
+    pin: GPIO4
+    inverted: true
+  - platform: gpio
+    id: led2r
+    pin: GPIO16
+    inverted: true
+
+  - platform: gpio
+    pin: GPIO17
+    id: led3g
+    inverted: true
+  - platform: gpio
+    id: led3r
+    pin: GPIO5
+    inverted: true
+  - platform: gpio
+    id: led4g
+    pin: GPIO18
+    inverted: true
+  - platform: gpio
+    id: led4r
+    pin: GPIO23
+    inverted: true
+
+light:
+  - platform: binary
+    output: led1g
+    name: "$upper_devicename 1"
+    on_turn_off:
+      then:
+        - output.turn_on: led1r
+    on_turn_on:
+      then:
+        - output.turn_off: led1r
+  - platform: binary
+    output: led2g
+    name: "$upper_devicename 2"
+    on_turn_off:
+      then:
+        - output.turn_on: led2r
+    on_turn_on:
+      then:
+        - output.turn_off: led2r
+
+  - platform: binary
+    output: led3g
+    name: "$upper_devicename 3"
+    on_turn_off:
+      then:
+        - output.turn_on: led3r
+    on_turn_on:
+      then:
+        - output.turn_off: led3r
+  - platform: binary
+    output: led4g
+    name: "$upper_devicename 4"
+    on_turn_off:
+      then:
+        - output.turn_on: led4r
+    on_turn_on:
+      then:
+        - output.turn_off: led4r
+

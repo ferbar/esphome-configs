@@ -1,0 +1,150 @@
+# lego signal
+# neue 5mm rot / grün leds
+#     R zu + Bat:
+#       rot:  360 ohm
+#       grün: 360 ohm (grün is heller)
+#       neue idee: gpio -> r -> rote led auf + grüne auf - dann braucht ma nur ein kabel
+# gpio 8 ist die blaue led
+# gpio 9 ist der boot taster
+#
+# Signal: off = rot, on = grün
+#
+# Taster um eine Richtung auf 'Grün' zu schalten
+
+substitutions:
+  devicename: esp32c3-signal1
+  upper_devicename: "ESP32C3 Signal1"
+
+esphome:
+  name: $devicename
+  on_boot:
+    then:
+      - light.turn_on:
+          id: light_signal1
+          effect: "strobe"
+      - logger.log: "output.turn-off led1r"
+      - output.turn_off: led1g
+      - output.turn_off: led1r
+      - output.turn_off: led2g
+      - output.turn_off: led2r
+
+esp32:
+  variant:  esp32c3
+  board: lolin_c3_mini
+
+<<: !include common/base.yaml
+
+wifi:
+  networks:
+  - ssid: !secret wifi_name
+    password: !secret wifi_pass
+  output_power: 8.5dB
+#  output_power: 20dB
+  on_connect:
+    - light.turn_off:
+        id: light_signal1
+    - light.turn_on:
+        id: light_signal2
+        effect: strobe
+    
+api:
+  on_client_connected:
+    - light.turn_off:
+        id: light_signal1
+    - light.turn_off:
+        id: light_signal2
+
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+#  - !include common/base-sensor-vcc.yaml
+
+output:
+#  - platform: ledc
+  - platform: gpio
+    pin: GPIO5
+    id: led1g
+    inverted: true
+  - platform: gpio
+    id: led1r
+    pin: GPIO6
+    inverted: true
+
+  - platform: gpio
+    pin: GPIO7
+    id: led2g
+    inverted: true
+  - platform: gpio
+    id: led2r
+    pin: GPIO10
+    inverted: true
+
+light:
+  - platform: binary
+    id: light_signal1
+    output: led1g
+    name: "$upper_devicename 1"
+    on_state:
+      then:
+        - lambda: 'if(id(light_signal1).current_values.is_on() ) id(led1r).turn_off() ; else id(led1r).turn_on();'
+        - logger.log: "signal1 on state"
+#    on_turn_off:
+#      then:
+#        - output.turn_on: led1r
+#        - logger.log: "led1r turned on"
+#    on_turn_on:
+#      then:
+#        - output.turn_off: led1r
+    effects:
+      - strobe:
+          colors:
+            - state: true
+              duration: 10ms
+            - state: false
+              duration: 1000ms
+
+  - platform: binary
+    id: light_signal2
+    output: led2g
+    name: "$upper_devicename 2"
+    on_state:
+      then:
+        - lambda: 'if(id(light_signal2).current_values.is_on() ) id(led2r).turn_off() ; else id(led2r).turn_on();'
+        - logger.log: "signal1 on state"
+#    on_turn_off:
+#      then:
+#        - output.turn_on: led2r
+#    on_turn_on:
+#      then:
+#        - output.turn_off: led2r
+    effects:
+      - strobe:
+          colors:
+            - state: true
+              duration: 10ms
+            - state: false
+              duration: 1000ms
+
+  - platform: status_led
+    name: "${upper_devicename} blue led"
+    pin:
+      number: GPIO08
+      inverted: True
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO09
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: $devicename button
+#    on_press:
+#      - light.toggle: light_signal1
+    
