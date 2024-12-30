@@ -23,6 +23,7 @@ wifi: !include wifi.yaml
 # Enable Web server
 web_server:
   port: 80
+  ota: false
 
 text_sensor:
   - !include base-text-sensor-version.yaml
