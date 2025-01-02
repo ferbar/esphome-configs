@@ -1,0 +1,119 @@
+# gpio 8 ist die blaue led
+# gpio 9 ist der boot taster
+#
+
+substitutions:
+  devicename: esp32c3-herd-strommesser
+  upper_devicename: "ESP32C3 Herd Strommesser"
+
+esphome:
+  name: $devicename
+  on_boot:
+    then:
+#      - light.turn_on:
+#          id: light_signal1
+#          effect: "strobe"
+      - logger.log: "output.turn-off led1r"
+#      - output.turn_off: led1g
+#      - output.turn_off: led1r
+#      - output.turn_off: led2g
+#      - output.turn_off: led2r
+
+esp32:
+  variant:  esp32c3
+  board: lolin_c3_mini
+
+<<: !include common/base.yaml
+
+wifi:
+  networks:
+  - ssid: !secret wifi_name
+    password: !secret wifi_pass
+  output_power: 8.5dB
+#  output_power: 20dB
+#  on_connect:
+#    - light.turn_off:
+#        id: light_signal1
+#    - light.turn_on:
+#        id: light_signal2
+#        effect: strobe
+    
+api:
+#  on_client_connected:
+#    - light.turn_off:
+#        id: light_signal1
+#    - light.turn_off:
+#        id: light_signal2
+
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+
+sensor:
+  - !include common/base-sensor-wifi.yaml
+  - !include common/base-sensor-uptime.yaml
+#  - !include common/base-sensor-vcc.yaml
+  - platform: adc
+    pin: GPIO00
+    name: $devicename Phase 1
+    update_interval: 5s
+    unit_of_measurement: W
+    attenuation: "12db"
+    #accuracy_decimals: 2
+    filters:
+      - lambda: "return (x > 0.01) ? (x+0.07)*10*238 : 0;"
+#      - multiply: 
+      - round: 1
+#      - lambda: "return round(x*100)/100;"
+  - platform: adc
+    pin: GPIO01
+    name: $devicename Phase 2
+    update_interval: 5s
+    unit_of_measurement: W
+    attenuation: "12db"
+    #accuracy_decimals: 2
+    filters:
+      - lambda: "return (x > 0.01) ? (x+0.07)*10*238 : 0;"
+      - round: 1
+#      - lambda: "return round(x*100)/100;"
+  - platform: adc
+    pin: GPIO02
+    name: $devicename Phase 3
+    update_interval: 5s
+    unit_of_measurement: W
+    attenuation: "12db"
+    #accuracy_decimals: 2
+    filters:
+      - lambda: "return (x > 0.01) ? (x+0.07)*10*238 : 0;"
+      - round: 1
+#      - lambda: "return round(x*100)/100;"
+
+output:
+#  - platform: ledc
+  - platform: gpio
+    pin: GPIO5
+    id: led1g
+    inverted: true
+  - platform: gpio
+    id: led1r
+    pin: GPIO6
+    inverted: true
+
+  - platform: gpio
+    pin: GPIO7
+    id: led2g
+    inverted: true
+  - platform: gpio
+    id: led2r
+    pin: GPIO10
+    inverted: true
+
+light:
+  - platform: status_led
+    name: "${upper_devicename} blue led"
+    pin:
+      number: GPIO08
+      inverted: True
+
+    
