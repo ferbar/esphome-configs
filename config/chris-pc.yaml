@@ -46,7 +46,7 @@ switch:
         dbus_interface: org.mpris.MediaPlayer2.Player
         # dbus_method: PlayPause
         dbus_method: Play
-        dbus_arg: []
+        dbus_args: []
     turn_off_action:
     - logger.log: "Switch Turned Off!"
     - dbus.send:
@@ -54,10 +54,12 @@ switch:
         dbus_path: /org/mpris/MediaPlayer2
         dbus_interface: org.mpris.MediaPlayer2.Player
         dbus_method: Stop
-        dbus_arg: []
+        dbus_args: []
 
 
   - name: "${upper_devicename} Screen Lock"
+    # lock unlock via dbus
+    # other method: loginctl
     platform: template
     lambda: |-
       return id(lock_active).state == "true";
@@ -71,7 +73,7 @@ switch:
         dbus_path: /ScreenSaver
         dbus_interface: org.freedesktop.ScreenSaver
         dbus_method: Lock
-        dbus_arg: []
+        dbus_args: []
     turn_off_action:
     - logger.log: "Switch Turned Off!"
     - dbus.send:
@@ -79,7 +81,7 @@ switch:
         dbus_path: /ScreenSaver
         dbus_interface: org.freedesktop.ScreenSaver
         dbus_method: Unlock
-        dbus_arg: []
+        dbus_args: []
 
 
 
@@ -95,7 +97,7 @@ text_sensor:
     dbus_interface: "org.freedesktop.DBus.Properties"
     dbus_method: Get
 #    dbus_properties: org.freedesktop.DBus.Properties
-    dbus_arg:
+    dbus_args:
       - "org.mpris.MediaPlayer2.Player"
       - "Metadata"
     name: "${upper_devicename} amarok title, artist"
@@ -111,7 +113,7 @@ text_sensor:
     dbus_path: /org/mpris/MediaPlayer2
     dbus_method: Get
     dbus_interface: org.freedesktop.DBus.Properties
-    dbus_arg:
+    dbus_args:
       - org.mpris.MediaPlayer2.Player
       - PlaybackStatus
     name: "${upper_devicename} amarok status"
@@ -126,7 +128,7 @@ text_sensor:
     dbus_path: /org/freedesktop/ScreenSaver
     dbus_interface: org.freedesktop.ScreenSaver
     dbus_method: GetActive
-    dbus_arg: []
+    dbus_args: []
     name: "${upper_devicename} lock status"
     properties:
       - "dummy"
