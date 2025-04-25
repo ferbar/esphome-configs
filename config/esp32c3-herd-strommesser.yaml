@@ -1,6 +1,7 @@
 # gpio 8 ist die blaue led
 # gpio 9 ist der boot taster
 #
+# Schaltung: https://easyeda.com/editor#mode=sim,id=b3143017729b4ca6bda500e2125ab44e
 
 substitutions:
   devicename: esp32c3-herd-strommesser
@@ -57,57 +58,92 @@ sensor:
   - platform: adc
     pin: GPIO00
     name: $devicename Phase 1
+    id: phase1_wattage
     update_interval: 5s
     unit_of_measurement: W
     attenuation: "12db"
-    #accuracy_decimals: 2
+    accuracy_decimals: 0
     filters:
-      - lambda: "return (x > 0.01) ? (x+0.07)*10*238 : 0;"
+      # spannung = 220ohm*(strom / 3000)
+      # 0,07V spannungsabfall auf der diode
+      - lambda: "return (x > 0.01) ? round((x+0.07)*10*238) : 0;"
 #      - multiply: 
-      - round: 1
+#      - round: 1
 #      - lambda: "return round(x*100)/100;"
+  - platform: total_daily_energy
+    name: "$devicename Phase 1 Tagesverbrauch"
+    power_id: phase1_wattage
+    filters:
+    # Multiplication factor from W to kW is 0.001
+    - multiply: 0.001
+    unit_of_measurement: kWh
+    icon: mdi:calendar-clock
   - platform: adc
     pin: GPIO01
     name: $devicename Phase 2
+    id: phase2_wattage
     update_interval: 5s
     unit_of_measurement: W
     attenuation: "12db"
-    #accuracy_decimals: 2
+    accuracy_decimals: 0
     filters:
-      - lambda: "return (x > 0.01) ? (x+0.07)*10*238 : 0;"
-      - round: 1
+      - lambda: "return (x > 0.01) ? round((x+0.07)*10*238) : 0;"
+#      - round: 1
 #      - lambda: "return round(x*100)/100;"
+  - platform: total_daily_energy
+    name: "$devicename Phase 2 Tagesverbrauch"
+    power_id: phase2_wattage
+    filters:
+    # Multiplication factor from W to kW is 0.001
+    - multiply: 0.001
+    unit_of_measurement: kWh
+    icon: mdi:calendar-clock
+# GPIO02 braucht einen pull up
   - platform: adc
-    pin: GPIO02
+    pin: GPIO03
     name: $devicename Phase 3
+    id: phase3_wattage
     update_interval: 5s
     unit_of_measurement: W
     attenuation: "12db"
-    #accuracy_decimals: 2
+    accuracy_decimals: 0
     filters:
-      - lambda: "return (x > 0.01) ? (x+0.07)*10*238 : 0;"
-      - round: 1
+      - lambda: "return (x > 0.01) ? round((x+0.07)*10*238) : 0;"
+#      - round: 1
 #      - lambda: "return round(x*100)/100;"
+  - platform: total_daily_energy
+    name: "$devicename Phase 3 Tagesverbrauch"
+    power_id: phase3_wattage
+    filters:
+    # Multiplication factor from W to kW is 0.001
+    - multiply: 0.001
+    unit_of_measurement: kWh
+    icon: mdi:calendar-clock
+
+  - platform: adc
+    pin: GPIO04
+    name: $devicename Phase 4
+    id: phase4_wattage
+    update_interval: 5s
+    unit_of_measurement: W
+    attenuation: "12db"
+    accuracy_decimals: 0
+    filters:
+      - lambda: "return (x > 0.01) ? round((x+0.07)*10*238) : 0;"
+#      - round: 1
+#      - lambda: "return round(x*100)/100;"
+  - platform: total_daily_energy
+    name: "$devicename Phase 4 Tagesverbrauch"
+    power_id: phase4_wattage
+    filters:
+    # Multiplication factor from W to kW is 0.001
+    - multiply: 0.001
+    unit_of_measurement: kWh
+    icon: mdi:calendar-clock
+
+# GPIO05 ist ADC2 == WIFI, geht nicht
 
 output:
-#  - platform: ledc
-  - platform: gpio
-    pin: GPIO5
-    id: led1g
-    inverted: true
-  - platform: gpio
-    id: led1r
-    pin: GPIO6
-    inverted: true
-
-  - platform: gpio
-    pin: GPIO7
-    id: led2g
-    inverted: true
-  - platform: gpio
-    id: led2r
-    pin: GPIO10
-    inverted: true
 
 light:
   - platform: status_led
@@ -116,4 +152,7 @@ light:
       number: GPIO08
       inverted: True
 
-    
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    timezone: Europe/Vienna
