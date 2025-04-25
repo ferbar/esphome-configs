@@ -29,14 +29,47 @@ dbus:
 #web_server:
 #  port: 8123
 
+#i2c:
+#  path: /dev/i2c-12
+
+## Example configuration entry
+#pca9685:
+#  - id: pca9685_hub1
+#    frequency: 500
+##    address: 0x40
+
+## Individual outputs
+#output:
+#  - platform: pca9685
+#    pca9685_id: 'pca9685_hub1'
+#    id: pwm0
+#    inverted: true
+#    channel: 0
+#
+#light:
+#  - platform: monochromatic
+#    name: "${upper_devicename} light0"
+#    output: pwm0
+#    gamma_correct: 1
+
 switch:
+  - name: "${upper_devicename} power standby"
+    platform: template
+    turn_on_action:
+    - dbus.send:
+        dbus_system: true
+        dbus_destination: org.freedesktop.login1
+        dbus_path: /org/freedesktop/login1
+        dbus_interface: org.freedesktop.login1.Manager
+        dbus_method: Suspend
+        dbus_args: ["bool:True"]
   - name: "${upper_devicename} Amarok Play Switch"
     platform: template
-    #  return id(my_custom_switch).state;
     lambda: |-
       return id(playback_status).state == "Playing";
-    id: my_custom_switch
+    id: amarok_switch
     optimistic: true
+    restore_mode: DISABLED
     turn_on_action:
     - logger.log: "Switch Turned On!"
     # dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.amarok /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Play
@@ -65,6 +98,7 @@ switch:
       return id(lock_active).state == "true";
     # id: lock_switch
     optimistic: true
+    restore_mode: DISABLED
     turn_on_action:
     - logger.log: "Lock Switch Turned On!"
     # dbus-send --session --print-reply --dest=org.freedesktop.ScreenSaver /ScreenSaver org.freedesktop.ScreenSaver.Lock
@@ -85,7 +119,6 @@ switch:
 
 
 
-# fixme todo!!!! wenn eine option fehlt dann kommt a sinnlose fehlermeldungen !!!!!!!!!!!!!!!!!!!!
 # mit qdbusviewer-qt5 schaun
 # dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.amarok /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'
 text_sensor:
@@ -96,7 +129,6 @@ text_sensor:
     dbus_path: "/org/mpris/MediaPlayer2"
     dbus_interface: "org.freedesktop.DBus.Properties"
     dbus_method: Get
-#    dbus_properties: org.freedesktop.DBus.Properties
     dbus_args:
       - "org.mpris.MediaPlayer2.Player"
       - "Metadata"
@@ -130,8 +162,7 @@ text_sensor:
     dbus_method: GetActive
     dbus_args: []
     name: "${upper_devicename} lock status"
-    properties:
-      - "dummy"
+    properties: ["root"]
     id: lock_active
 
   # smart register !!! nur von sata platten
@@ -140,3 +171,11 @@ text_sensor:
 #  - platform: host_filesystem
 #    sda:
 #      name: "${upper_devicename} sda"
+
+#sensor:
+#  - platform: vl53l0x
+#    name: "${upper_devicename} VL53L0x Distance"
+#    address: 0x29
+#    update_interval: 10s
+#    long_range: true
+#    timeout: 50ms
