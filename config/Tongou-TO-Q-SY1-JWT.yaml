@@ -1,0 +1,12 @@
+substitutions:
+  name: "tongou-to-q-sy1-jwt"
+  tongou_name: "${name}"
+  voltage_ref: "15937"
+  current_ref: "121830"
+  power_ref: "302.0"
+  energy_ref: "2592"
+  devicename: "${name}"
+  upper_devicename: "Tongou-TO-Q-SY1-JWT"
+
+packages:
+  tongou: !include esphome_devices/tongou.yaml # below
