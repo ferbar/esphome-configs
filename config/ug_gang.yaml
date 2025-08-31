@@ -4,7 +4,8 @@ substitutions:
 
 esphome:
   name: $devicename
-  platform: ESP8266
+
+esp8266:
   board: nodemcuv2
 
 
@@ -45,9 +46,6 @@ binary_sensor:
     name: "${upper_devicename} PIR Sensor 2"
     device_class: motion
 
-  - platform: status
-    name: "${upper_devicename} Status"
-
 sensor:
   - !include common/base-sensor-wifi.yaml
   - !include common/base-sensor-uptime.yaml
@@ -56,8 +54,9 @@ sensor:
     pin: A0
     name: "${upper_devicename} Raum Beleuchtungsstärke"
     id: keller_gang_light_intensity
+    device_class: illuminance
     update_interval: 10s
-    unit_of_measurement: lux
+    unit_of_measurement: lx
     filters:
       - lambda: |-
           return (x / 10000.0) * 2000000.0;
