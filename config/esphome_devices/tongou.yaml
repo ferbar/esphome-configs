@@ -1,0 +1,119 @@
+# https://devices.esphome.io/devices/Tongou-TO-Q-SY1-JWT
+# tongou.yaml
+esphome:
+  name: ${name}
+
+bk72xx:
+  board: generic-bk7231n-qfn32-tuya
+
+packages:
+  base: !include ../common/base.yaml # WiFi and MQTT settings.
+
+logger:
+  level: DEBUG
+
+network:
+  enable_ipv6: false # Not supported on BL72xx yet
+
+#mqtt:
+#  on_connect:
+#    then:
+#      - light.turn_on: led
+#  on_disconnect:
+#    then:
+#      - light.turn_off: led
+
+text_sensor:
+  - platform: libretiny
+    version:
+      name: LibreTiny Version
+
+light:
+  - platform: status_led
+    internal: true
+    pin:
+      number: P15
+      inverted: true
+    id: led
+    restore_mode: ALWAYS_OFF
+
+binary_sensor:
+  - !include ../common/base-binarysensor-status.yaml
+  - platform: gpio
+    name: button
+    id: button
+    internal: true
+    pin:
+      number: P17
+      inverted: true
+    filters:
+     - delayed_off: 10ms
+    on_press:
+      then:
+         switch.toggle: relay
+
+switch:
+  - platform: gpio
+    internal: true
+    pin: P24
+    id: relay_on
+    restore_mode: ALWAYS_OFF
+  - platform: gpio
+    internal: true
+    pin: P26
+    id: relay_off
+    restore_mode: ALWAYS_OFF
+  - platform: gpio
+    pin:
+      number: P9
+      inverted: true
+    id: relay
+    name: Relay
+    # On by default should be fine as this is not a safety device
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+      then:
+       - switch.turn_off: relay_off
+       - switch.turn_on: relay_on
+       - delay: 100ms
+       - switch.turn_off: relay_on
+    on_turn_off:
+      then:
+       - switch.turn_off: relay_on
+       - switch.turn_on: relay_off
+       - delay: 100ms
+       - switch.turn_off: relay_off
+
+uart:
+  id: uart_bus
+  tx_pin: TX1
+  rx_pin: RX1
+  baud_rate: 4800
+  stop_bits: 1
+
+sensor:
+  - platform: internal_temperature
+    name: "${tongou_name} Internal Temperature"
+
+  - platform: bl0942
+    uart_id: uart_bus
+    line_frequency: 50Hz
+    address: 0
+    update_interval: 20s
+    current:
+      name: ${tongou_name} Current
+    voltage:
+      name: ${tongou_name} Voltage
+    power:
+      name: ${tongou_name} Power
+      filters:
+        multiply: -1
+    energy:
+      name: ${tongou_name} Energy
+    frequency:
+      name: ${tongou_name} Frequency
+      accuracy_decimals: 2
+    voltage_reference: ${voltage_ref}
+    current_reference: ${current_ref}
+    power_reference: ${power_ref}
+    energy_reference: ${energy_ref}
