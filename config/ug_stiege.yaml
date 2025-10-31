@@ -1,0 +1,130 @@
+substitutions:
+  devicename: "ug_stiege"
+  upper_devicename: "UG Stiege"
+
+esphome:
+  name: $devicename
+#  on_boot:
+#    then:
+#      - light.turn_on:
+#          id: led_strip
+#          # 100% => 18W, 80% => 12W
+#          brightness: 80%
+
+esp32:
+  variant:  esp32c3
+  board: lolin_c3_mini
+
+# !!!!!!! RX und TX sind GPIO01 + GPIO03, die verwenden wir für PIR in !!!!!!!!!!!!!!!!!11
+<<: !include common/base.yaml
+
+# !!!!!!! 20230312 hint: selbst mit nur ota + wifi kann man den nicht über ota flashen, zu wenig freier speicher
+# Enable over the air updates
+#ota:
+#wifi: !include common/wifi.yaml
+
+binary_sensor:
+#  - !include common/base-binarysensor-status.yaml
+#  unten
+  - platform: gpio
+    name: $upper_devicename pir unten
+    device_class: motion
+    pin:
+      number: GPIO20
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+#    filters:
+#      - invert:
+#  oben
+  - platform: gpio
+    name: $upper_devicename pir oben
+    device_class: motion
+    pin:
+      number: GPIO21
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+#  - platform: status
+#    name: $upper_devicename Status
+
+#sensor:
+#  - !include common/base-sensor-wifi.yaml
+#  - !include common/base-sensor-uptime.yaml
+#  - !include common/base-sensor-vcc.yaml
+
+#text_sensor:
+#  - platform: version
+#    name: $upper_devicename Version
+
+switch:
+  - !include common/base-switch-reset.yaml
+
+output:
+  - platform: ledc
+    pin: GPIO00
+    id: gpio_out0
+  - platform: ledc
+    pin: GPIO01
+    id: gpio_out1
+  - platform: ledc
+    pin: GPIO02
+    id: gpio_out2
+  - platform: ledc
+    pin: GPIO03
+    id: gpio_out3
+
+light:
+  - platform: rgbw
+    name: "$upper_devicename Led strip light"
+    id: led_strip
+    # grbw
+    green: gpio_out0
+    red: gpio_out1
+    blue: gpio_out2
+    white: gpio_out3
+    effects:
+      - lambda:
+          name: Rainbow
+          update_interval: 2s
+          lambda: |-
+            static int state = 0;
+            auto call = id(led_strip).turn_on();
+            call.set_transition_length(2000);
+            if (state == 0) {
+              call.set_rgb(1.0, 0.0, 0.0);
+            } else if (state == 1) {
+              call.set_rgb(1.0, 0.5, 0.0);
+            } else if (state == 2) {
+              call.set_rgb(1.0, 1.0, 0.0);
+            } else if (state == 3) {
+              call.set_rgb(0.5, 1.0, 0.0);
+            } else if (state == 4) {
+              call.set_rgb(0.0, 1.0, 0.0);
+            } else if (state == 5) {
+              call.set_rgb(0.0, 1.0, 0.5);
+            } else if (state == 6) {
+              call.set_rgb(0.0, 1.0, 1.0);
+            } else if (state == 7) {
+              call.set_rgb(0.0, 0.5, 1.0);
+            } else if (state == 8) {
+              call.set_rgb(0.0, 0.0, 1.0);
+            } else if (state == 9) {
+              call.set_rgb(0.5, 0.0, 1.0);
+            } else if (state == 10) {
+              call.set_rgb(1.0, 0.0, 1.0);
+            } else if (state == 11) {
+              call.set_rgb(1.0, 0.0, 0.5);
+            }
+            call.perform();
+            state++;
+            if (state == 12)
+              state = 0;
+
+  - platform: status_led
+    name: "${upper_devicename} Status LED"
+    pin:
+      number: GPIO08
+      inverted: True
