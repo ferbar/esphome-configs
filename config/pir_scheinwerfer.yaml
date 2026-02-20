@@ -6,8 +6,8 @@ esphome:
   name: $devicename
 
 esp8266:
-#  board: esp01
-  board: d1_mini_pro
+  board: esp01
+#  board: d1_mini_pro
 
 <<: !include common/base.yaml
 
@@ -19,22 +19,29 @@ esp8266:
 binary_sensor:
   - !include common/base-binarysensor-status.yaml
   - platform: gpio
-#    pin:
-#      number: 3
-#      inverted: true
-    pin: D1
+    pin:
+      number: 3
+      inverted: true
     name: "${upper_devicename} motion"
     device_class: motion
     on_press:
       then:
         - lambda: |-
             ESP_LOGW("pir", "on");
-            if( id(output_mode).state == "auto") id(gpio_out).turn_on();
+            ESP_LOGW("mode", "%s", id(output_mode).state.c_str());
+            if( id(output_mode).state == "auto") {
+              ESP_LOGW("muh", "lampe).turn_on()");
+              id(lampe).turn_on().perform();
+            }
     on_release:
       then:
         - lambda: |-
             ESP_LOGW("pir", "off");
-            if( id(output_mode).state == "auto") id(gpio_out).turn_off();
+            ESP_LOGW(__FILE__, "mode: %s", id(output_mode).state.c_str());
+            if( id(output_mode).state == "auto") {
+              ESP_LOGW(__FILE__, "lampe).turn_off()");
+              id(lampe).turn_off().perform();
+            }
 
 sensor:
   - !include common/base-sensor-wifi.yaml
@@ -49,19 +56,25 @@ sensor:
 switch:
   - !include common/base-switch-reset.yaml
 
-  - platform: template
-    name: "${upper_devicename} light"
-    id: light_switch
-#    output: 'gpio_out'
-    optimistic: true
-    turn_on_action:
-        - lambda: |-
-            ESP_LOGW("pir", "on");
-            if( id(output_mode).state == "auto" || id(output_mode).state == "normal" ) id(gpio_out).turn_on();
-    turn_off_action:
-        - lambda: |-
-            ESP_LOGW("pir", "off");
-            if( id(output_mode).state == "auto" || id(output_mode).state == "normal" ) id(gpio_out).turn_off();
+#  - platform: template
+#    name: "${upper_devicename} light"
+#    id: light_switch
+##    output: 'gpio_out'
+##    optimistic: true
+#    lambda: |-
+#      return id(gpio_out).state;
+#    turn_on_action:
+#        - lambda: |-
+#            ESP_LOGW("pir", "on");
+#            if( id(output_mode).state == "auto" || id(output_mode).state == "manuell" ) {
+#              id(gpio_out).turn_on();
+#            }
+#    turn_off_action:
+#        - lambda: |-
+#            ESP_LOGW("pir", "off");
+#            if( id(output_mode).state == "auto" || id(output_mode).state == "manuell" ) {
+#              id(gpio_out).turn_off();
+#            }
 
 select:
   - platform: template
@@ -71,9 +84,9 @@ select:
     optimistic: true
     options:
       - auto
-      - normal
-      - always_on
-      - always_off
+      - manuell
+#      - always_on
+#      - always_off
     initial_option: auto
     on_value:
       then:
@@ -85,8 +98,8 @@ select:
                 // status lesen funktioniert nicht
                 // case 0: id(light_switch).state = id(gpio_out).current_values.state(); break;
                 // case 1: id(light_switch).state = id(gpio_out).current_values.state; break;
-              case 2: id(gpio_out).turn_on(); break;
-              case 3: id(gpio_out).turn_off(); break;
+              // case 1: id(lampe).turn_on(); break;
+              // case 2: id(lampe).turn_off(); break;
             }
 #      lambda: |-
 #        ESP_LOGW("output mode", "turn off");
@@ -110,18 +123,23 @@ select:
 
 output:
   - platform: gpio
-#    pin: GPIO02
-    pin: D8
     #inverted: true
-    id: gpio_out
-
-
-
-
-light:
-  - platform: status_led
-    name: "${upper_devicename} LED"
+    id: lampe_output
     pin:
       number: GPIO2
+#      inverted: true
+
+light:
+
+  - platform: binary
+    name: "${upper_devicename} Scheinwerfer"
+    output: lampe_output
+    id: lampe
+
+
+  - platform: status_led
+    name: "${upper_devicename} Status LED"
+    pin:
+      number: GPIO1
       inverted: true
 
